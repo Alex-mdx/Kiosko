@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:kiosko/controllers/MPago_point_controller.dart';
 import 'package:kiosko/controllers/user_controller.dart';
 import 'package:kiosko/models/MPago_point_model.dart';
+import 'package:kiosko/models/producto_demo_model.dart';
 import 'package:kiosko/models/usuario_model.dart';
 
 import '../models/device_model.dart';
@@ -38,8 +39,24 @@ class MainProvider with ChangeNotifier {
   List<PrinterModel> _devices = [];
   List<PrinterModel> get devices => _devices;
   set devices(List<PrinterModel> valor) {
-  _devices = valor;
-  notifyListeners();
+    _devices = valor;
+    notifyListeners();
+  }
+
+  List<ProductoDemoModel> _detalle = [];
+  List<ProductoDemoModel> get detalle => _detalle;
+  set detalle(List<ProductoDemoModel> valor) {
+    _detalle = valor;
+    notifyListeners();
+  }
+
+  //!FUNCIONES
+  double totalSumatoria() {
+    var monto = 0.0;
+    for (var element in detalle) {
+      monto += element.total;
+    }
+    return monto;
   }
 
   Future<void> logeo() async {

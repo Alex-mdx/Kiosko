@@ -9,7 +9,6 @@ environment:
 dependencies:
   animated_custom_dropdown: ^3.1.1
   animated_flip_counter: ^0.3.4
-
   badges: ^3.1.2
   cupertino_icons: ^1.0.8
   esc_pos_utils_plus: ^2.0.4
@@ -27,8 +26,8 @@ dependencies:
   provider: ^6.1.2
   shared_preferences: ^2.5.2
   sizer: ^3.0.5
-  smart_usb: ^0.4.2
   sqflite: ^2.4.2
+  translator: ^0.1.7
 
 dev_dependencies:
 

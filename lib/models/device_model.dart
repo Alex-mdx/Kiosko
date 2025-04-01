@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
-import 'package:smart_usb/smart_usb.dart';
 
 class PrinterModel {
   String? address;
@@ -13,7 +12,6 @@ class PrinterModel {
   String? manufacturer;
   String? serialNumber;
   String? connectionTypes;
-  UsbDevice? usbDevice;
 
   PrinterModel(
       {required this.name,
@@ -21,11 +19,10 @@ class PrinterModel {
       this.isConnected,
       this.vendorId,
       this.productId,
-       this.paper,
+      this.paper,
       this.manufacturer,
       this.serialNumber,
-      this.connectionTypes,
-      this.usbDevice});
+      this.connectionTypes});
 
   PrinterModel copyWith(
           {String? name,
@@ -37,8 +34,7 @@ class PrinterModel {
           String? manufacturer,
           String? serialNumber,
           String? connectionTypes,
-          String? direccion,
-          UsbDevice? usbDevice}) =>
+          String? direccion}) =>
       PrinterModel(
           name: name ?? this.name,
           address: address ?? this.address,
@@ -48,8 +44,7 @@ class PrinterModel {
           paper: paper ?? this.paper,
           manufacturer: manufacturer ?? this.manufacturer,
           serialNumber: serialNumber ?? this.serialNumber,
-          connectionTypes: connectionTypes ?? this.connectionTypes,
-          usbDevice: usbDevice ?? this.usbDevice);
+          connectionTypes: connectionTypes ?? this.connectionTypes);
 
   factory PrinterModel.fromJson(Map<String, dynamic> json) => PrinterModel(
       name: json["name"],
@@ -64,11 +59,7 @@ class PrinterModel {
               : PaperSize.mm58,
       manufacturer: json["manufacturer"].toString(),
       serialNumber: json["serial_number"].toString(),
-      connectionTypes: json["connection_types"],
-      usbDevice: json["usb_device"].toString() == "null"
-          ? UsbDevice(
-              identifier: "", vendorId: 0, productId: 0, configurationCount: 0)
-          : UsbDevice.fromMap(jsonDecode(json["usb_device"])));
+      connectionTypes: json["connection_types"]);
 
   Map<String, dynamic> toJson() => {
         "name": name,
@@ -83,7 +74,6 @@ class PrinterModel {
                 : "58",
         "manufacturer": manufacturer,
         "serial_number": serialNumber,
-        "connection_types": connectionTypes,
-        "usb_device": jsonEncode(usbDevice?.toMap())
+        "connection_types": connectionTypes
       };
 }

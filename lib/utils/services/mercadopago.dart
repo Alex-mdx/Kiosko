@@ -6,6 +6,7 @@ import 'package:kiosko/utils/route/link.dart';
 import 'package:mercadopago_sdk/mercadopago_sdk.dart';
 import 'package:oktoast/oktoast.dart';
 
+import '../../models/MPago_payment_model.dart';
 import '../../models/MPago_point_model.dart';
 import '../../models/Mpago_pay_intent_model.dart';
 
@@ -66,14 +67,23 @@ class Mercadopago {
     }
   }
 
-  static Future<MPagoPayIntentModel?> findIntencion({required String id}) async {
+  static Future<MPagoPayIntentModel?> findIntencion(
+      {required String id}) async {
     try {
       var mp = MP(clienteId, clienteSecret);
-      final response = await mp.get(
-          "/point/integration-api/payment-intents/$id");
+      final response =
+          await mp.get("/point/integration-api/payment-intents/$id");
       if (response['status'] == 200 || response['status'] == 201) {
         log("${response["response"]}");
-        return MPagoPayIntentModel.fromJson(response["response"]);
+        var pagoIntento = MPagoPayIntentModel(
+            id: response["response"]["id"].toString(),
+            state: response["response"]["state"].toString(),
+            amount: double.parse(response["response"]["amount"].toString()),
+            deviceId: response["response"]["deviceId"].toString(),
+            payment: Payment(
+                id: response["response"]["payment"]?["id"],
+                type: response["response"]["payment"]?["type"]));
+        return pagoIntento;
       } else {
         showToast(
             "${response["response"]["code"]}\n${response["response"]["message"]}");
@@ -83,5 +93,46 @@ class Mercadopago {
       log("$e");
       return null;
     }
+  }
+
+  static Future<MPagoPaymentModel?> findPay({required String id}) async {
+    try {
+      var mp = MP(clienteId, clienteSecret);
+      final response = await mp.getPayment(id);
+      if (response['status'] == 200 || response['status'] == 201) {
+        log("${response["response"]}");
+        return MPagoPaymentModel.fromJson(response["response"]);
+      } else {
+        showToast(
+            "${response["response"]["code"]}\n${response["response"]["message"]}");
+        return null;
+      }
+    } catch (e) {
+      log("$e");
+      return null;
+    }
+  }
+
+  static string({required String state}) {
+    String newValor = "En espera";
+    switch (state) {
+      case "ON_TERMINAL":
+        newValor = "En terminal";
+        break;
+      case "CANCELED":
+        newValor = "Cancelado";
+        break;
+      case "FINISHED":
+        newValor = "Finalizado";
+        break;
+      case "PROCESSING":
+        newValor = "PROCESANDO";
+        break;
+
+      default:
+        newValor = "En espera";
+        break;
+    }
+    return newValor;
   }
 }

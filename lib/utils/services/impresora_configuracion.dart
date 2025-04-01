@@ -4,7 +4,6 @@ import 'package:flutter/rendering.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
-import 'package:smart_usb/smart_usb.dart';
 
 import '../../controllers/printer_controller.dart';
 import '../../models/device_model.dart';
@@ -27,25 +26,9 @@ class ImpresoraConnect {
   static Future<void> conectAuto(MainProvider provider) async {
     final device = await PrinterController.getItems();
     await PrintBluetoothThermal.disconnect;
-    log('almacen: ${device.map((e) => e.name).toList()}');
+    log('almacen: ${device.map((e) => "${e.name} - ${e.connectionTypes}").toList()}');
     bool result = false;
     for (var element in device) {
-      if (element.connectionTypes == "USB") {
-        await SmartUsb.init();
-
-        UsbDeviceDescription newDevice = UsbDeviceDescription(
-            device: element.usbDevice ??
-                UsbDevice(
-                    identifier: "",
-                    vendorId: 0,
-                    productId: 0,
-                    configurationCount: 0),
-            manufacturer: element.manufacturer,
-            product: element.name,
-            serialNumber: element.serialNumber);
-
-        result = await SmartUsb.connectDevice(newDevice.device);
-      } else {
         PrinterModel newDevice = PrinterModel(
             name: element.name!,
             address: element.address,
@@ -53,10 +36,10 @@ class ImpresoraConnect {
             isConnected: element.isConnected,
             productId: element.productId,
             vendorId: element.vendorId);
-
+        log("${newDevice.toJson()}");
         result = await PrintBluetoothThermal.connect(
             macPrinterAddress: newDevice.address ?? "");
-      }
+      
       Future.delayed(Duration(milliseconds: 500), () {
         debugPrint("$result");
         provider.devices.add(element);
@@ -75,18 +58,10 @@ class ImpresoraConnect {
     log("${actual.toJson()}");
     bool result = false;
     await PrintBluetoothThermal.disconnect;
-    PrinterModel device = PrinterModel(
-        name: actual.name!,
-        address: actual.address,
-        productId: actual.productId,
-        vendorId: actual.vendorId,
-        connectionTypes: actual.connectionTypes,
-        isConnected: actual.isConnected);
+    PrinterModel device = actual;
     try {
       showToast("Estableciendo conexion con la impresora");
-      result = device.connectionTypes == "USB"
-          ? await SmartUsb.connectDevice(actual.usbDevice!)
-          : await PrintBluetoothThermal.connect(
+      result = await PrintBluetoothThermal.connect(
               macPrinterAddress: actual.address ?? "");
 
       if (!result) {

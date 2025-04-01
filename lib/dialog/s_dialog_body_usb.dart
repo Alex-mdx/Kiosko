@@ -11,7 +11,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
-import 'package:smart_usb/smart_usb.dart';
 import '../controllers/printer_controller.dart';
 import '../models/device_model.dart';
 import '../theme/app_colors.dart';
@@ -31,7 +30,6 @@ class _MyWidgetState extends State<DialogImpresora> {
   List<BluetoothInfo> bleInfo = [];
   String? tipoPrinter;
   PaperSize tipoPapel = PaperSize.mm80;
-  List<UsbDeviceDescription> listUSB = [];
   /* PrinterDevice? selectDevice;
   List<PrinterDevice> dispositivosPrint = []; */
   bool starscan = false;
@@ -41,29 +39,12 @@ class _MyWidgetState extends State<DialogImpresora> {
     PaperSize.mm58.value: '58mm'
   };
 
-  List<String> Connection = ["USB", "BLUETOOTH"];
+  List<String> Connection = ["BLUETOOTH"];
 
   @override
   void initState() {
     super.initState();
-    
     obtenerPermisoBluetooth();
-    
-  }
-
-  Future<void> scanUsb() async {
-    listUSB.clear();
-    var descriptions =
-        await SmartUsb.getDevicesWithDescription(requestPermission: true);
-    debugPrint("$descriptions");
-    listUSB = descriptions;
-    setState(() {});
-  }
-
-  Future<bool> connectDevice(UsbDeviceDescription device) async {
-    var isConnect = await SmartUsb.connectDevice(device.device);
-    debugPrint("$device");
-    return isConnect;
   }
 
   Future<void> obtenerPermisoBluetooth() async {
@@ -75,8 +56,6 @@ class _MyWidgetState extends State<DialogImpresora> {
       Permission.bluetooth,
       Permission.bluetoothAdvertise
     ].request();
-    await SmartUsb.init();
-    await scanUsb();
     debugPrint('scan: $statuses');
   }
 
@@ -122,30 +101,15 @@ class _MyWidgetState extends State<DialogImpresora> {
     super.dispose();
   }
 
-  Future<bool> ingresarImpresora(
-      {required PrinterModel? device,
-      required UsbDeviceDescription? usb}) async {
+  Future<bool> ingresarImpresora({required PrinterModel? device}) async {
     await PrintBluetoothThermal.disconnect;
-    showToast('Estableciendo conexion con ${device?.name ?? usb?.product}');
-    log("${device?.toJson() ?? usb?.toMap()}");
-    var result = device != null
-        ? await PrintBluetoothThermal.connect(
-            macPrinterAddress: device.address ?? "")
-        : await connectDevice(usb!);
+    showToast('Estableciendo conexion con ${device?.name}');
+    log("${device?.toJson()}");
+    var result = await PrintBluetoothThermal.connect(
+        macPrinterAddress: device?.address ?? "");
     if (result) {
       showToast('conexion exitosa');
-      PrinterModel newDevice = PrinterModel(
-          manufacturer: usb?.manufacturer,
-          serialNumber: usb?.serialNumber,
-          usbDevice: usb?.device,
-          name: device?.name ?? usb!.product,
-          address: device?.address,
-          vendorId: device?.vendorId ?? usb?.device.vendorId.toString(),
-          productId: device?.productId ?? usb?.device.productId.toString(),
-          paper: tipoPapel,
-          connectionTypes: device?.connectionTypes ?? "USB",
-          isConnected: int.tryParse(device?.isConnected.toString() ?? ""));
-      await PrinterController.insertPrinter(newDevice);
+      await PrinterController.insertPrinter(device!);
       return true;
     } else {
       showToast('No se pudo establecer la conexion');
@@ -183,11 +147,8 @@ class _MyWidgetState extends State<DialogImpresora> {
                             .contains(value!.toLowerCase()));
                         log("$tipoPrinter");
                       });
-                      if (tipoPrinter == "USB") {
-                        await scanUsb();
-                      } else {
-                        await startScan();
-                      }
+
+                      await startScan();
                     })),
             Expanded(
                 flex: 1,
@@ -229,7 +190,7 @@ class _MyWidgetState extends State<DialogImpresora> {
           child: Container(
               width: 75.w,
               constraints: BoxConstraints(maxHeight: 70.h),
-              child: bleInfo.isEmpty && listUSB.isEmpty
+              child: bleInfo.isEmpty
                   ? Column(mainAxisSize: MainAxisSize.min, children: [
                       starscan == true
                           ? const Padding(
@@ -251,30 +212,21 @@ class _MyWidgetState extends State<DialogImpresora> {
                               controller: _scrollCompra,
                               child: ListView.builder(
                                   shrinkWrap: true,
-                                  itemCount: tipoPrinter == "USB"
-                                      ? listUSB.length
-                                      : bleInfo.length,
+                                  itemCount: bleInfo.length,
                                   itemBuilder: (context, index) {
-                                    if (tipoPrinter == "USB") {
-                                      UsbDeviceDescription device =
-                                          listUSB[index];
-                                      return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            listTileUsb(device, provider),
-                                            Divider(height: 1.h)
-                                          ]);
-                                    } else {
-                                      PrinterModel device = PrinterModel(
-                                          name: bleInfo[index].name,
-                                          address: bleInfo[index].macAdress);
-                                      return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            listTileDevice(device, provider),
-                                            Divider(height: 1.h)
-                                          ]);
-                                    }
+                                    PrinterModel? device;
+
+                                    device = PrinterModel(
+                                        name: bleInfo[index].name,
+                                        address: bleInfo[index].macAdress,
+                                        connectionTypes: tipoPrinter);
+
+                                    return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          listTileDevice(device, provider),
+                                          Divider(height: 1.h)
+                                        ]);
                                   })));
                     })))
     ]);
@@ -325,15 +277,12 @@ class _MyWidgetState extends State<DialogImpresora> {
                 icon: const Icon(Icons.find_in_page,
                     color: LightThemeColors.darkBlue),
                 onPressed: () async {
-                  //bool result = await thermal.connect(device);
                   await PrintBluetoothThermal.disconnect;
                   var result = await PrintBluetoothThermal.connect(
                       macPrinterAddress: device.address ?? "");
                   if (result) {
                     await prinTest(
-                        dispositivoPrint: device,
-                        ubsprint: null,
-                        papelPrint: tipoPapel);
+                        dispositivoPrint: device, papelPrint: tipoPapel);
                   } else {
                     showToast('Perdida de conexion con la impresora');
                   }
@@ -350,18 +299,7 @@ class _MyWidgetState extends State<DialogImpresora> {
                               '¿Desea eliminar configuracion de este dispositivo?',
                           loadingTitle: 'Eliminando',
                           onAcceptPressed: (context) async {
-                            PrinterModel newModel = PrinterModel(
-                                manufacturer: null,
-                                serialNumber: null,
-                                usbDevice: null,
-                                name: device.name,
-                                address: device.address,
-                                vendorId: device.vendorId,
-                                productId: device.productId,
-                                paper: tipoPapel,
-                                connectionTypes: device.connectionTypes,
-                                isConnected: device.isConnected);
-                            await PrinterController.deleteDispositivo(newModel);
+                            await PrinterController.deleteDispositivo(device);
                             provider.devices =
                                 await PrinterController.getItems();
                             Navigation.pop();
@@ -369,133 +307,15 @@ class _MyWidgetState extends State<DialogImpresora> {
                     })
                 : null,
         onTap: () async {
-          bool resultado = await ingresarImpresora(device: device, usb: null);
+          bool resultado = await ingresarImpresora(device: device);
           if (resultado) {
-            PrinterModel newModel = PrinterModel(
-                manufacturer: null,
-                serialNumber: null,
-                usbDevice: null,
-                name: device.name,
-                address: device.address,
-                vendorId: device.vendorId,
-                productId: device.productId,
-                paper: tipoPapel,
-                connectionTypes: device.connectionTypes,
-                isConnected: device.isConnected);
-            provider.selectDevice = newModel;
-          }
-        });
-  }
-
-  ListTile listTileUsb(
-      UsbDeviceDescription device, MainProvider provider) {
-    bool deviceActual = ((provider.selectDevice?.vendorId ==
-            device.device.vendorId.toString()) &&
-        provider.selectDevice?.name == device.product);
-    bool guardado = ((provider.devices
-                .where((element) =>
-                    element.name == device.product &&
-                    (element.vendorId == device.device.vendorId.toString()))
-                .toList())
-            .firstOrNull
-            ?.name ==
-        device.product);
-    return ListTile(
-        leading: deviceActual
-            ? IconButton(
-                icon: const Icon(Icons.link, color: LightThemeColors.green),
-                onPressed: () {
-                  showToast('Dispositivo Enlanzado');
-                })
-            : !guardado
-                ? IconButton(
-                    icon: const Icon(Icons.device_hub,
-                        color: LightThemeColors.primary),
-                    onPressed: () {
-                      showToast('Dispositivo Disponible');
-                    })
-                : IconButton(
-                    icon: const Icon(Icons.add_link,
-                        color: LightThemeColors.yellow),
-                    onPressed: () {
-                      showToast('Dispositivo Almacenado Disponible');
-                    }),
-        title: Text(
-            '${device.product} ${deviceActual ? '| ${mmPaper[provider.selectDevice!.paper!.value]}' : ''}',
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle:
-            Text('${device.device.productId} - ${device.device.vendorId}'),
-        dense: true,
-        trailing: deviceActual
-            ? IconButton(
-                tooltip: 'imprimir test',
-                icon: const Icon(Icons.find_in_page,
-                    color: LightThemeColors.darkBlue),
-                onPressed: () async {
-                  showToast("Verificando conexion con ${device.product}");
-                  final result = await connectDevice(device);
-                  if (result) {
-                    await prinTest(
-                        dispositivoPrint: null,
-                        ubsprint: device,
-                        papelPrint: tipoPapel);
-                  } else {
-                    showToast("No se pudo conectar con ${device.product}");
-                  }
-                })
-            : guardado || deviceActual
-                ? IconButton(
-                    tooltip: 'Eliminar dispositivo',
-                    icon: const Icon(Icons.delete_outline,
-                        color: LightThemeColors.red),
-                    onPressed: () async {
-                      Dialogs.showMorph(
-                          title: 'Eliminar',
-                          description:
-                              '¿Desea eliminar configuracion de este dispositivo?',
-                          loadingTitle: 'Eliminando',
-                          onAcceptPressed: (context) async {
-                            PrinterModel newModel = PrinterModel(
-                                manufacturer: device.manufacturer,
-                                serialNumber: device.serialNumber,
-                                usbDevice: device.device,
-                                name: device.product,
-                                address: null,
-                                vendorId: device.device.vendorId.toString(),
-                                productId: device.device.productId.toString(),
-                                paper: tipoPapel,
-                                connectionTypes: tipoPrinter,
-                                isConnected: null);
-                            log("${newModel.toJson()}");
-                            await PrinterController.deleteDispositivo(newModel);
-                            provider.devices =
-                                await PrinterController.getItems();
-                            Navigation.pop();
-                          });
-                    })
-                : null,
-        onTap: () async {
-          bool resultado = await ingresarImpresora(device: null, usb: device);
-          if (resultado) {
-            PrinterModel newModel = PrinterModel(
-                manufacturer: device.manufacturer,
-                serialNumber: device.serialNumber,
-                usbDevice: device.device,
-                name: device.product,
-                address: null,
-                vendorId: device.device.vendorId.toString(),
-                productId: device.device.productId.toString(),
-                paper: tipoPapel,
-                connectionTypes: tipoPrinter,
-                isConnected: null);
-            provider.selectDevice = newModel;
+            provider.selectDevice = device;
           }
         });
   }
 
   Future<void> prinTest(
-      {required PrinterModel? dispositivoPrint,
-      required UsbDeviceDescription? ubsprint,
+      {required PrinterModel dispositivoPrint,
       required PaperSize papelPrint}) async {
     final profile = await CapabilityProfile.load();
     final generator = Generator(papelPrint, profile);
@@ -503,7 +323,7 @@ class _MyWidgetState extends State<DialogImpresora> {
     bytes += generator.reset();
     bytes += generator.text(
         Textos.normalizar(
-            'Impresion De Prueba\n${dispositivoPrint?.name ?? ubsprint!.product}'),
+            'Impresion De Prueba\n${dispositivoPrint.name ?? "Desconocido"}'),
         styles: const PosStyles(align: PosAlign.center, bold: true));
     bytes += generator.row([
       PosColumn(
@@ -536,12 +356,6 @@ class _MyWidgetState extends State<DialogImpresora> {
           text: '12', width: 1, styles: const PosStyles(align: PosAlign.center))
     ]);
     bytes += generator.cut();
-    if (dispositivoPrint != null) {
-      await PrintBluetoothThermal.writeBytes(bytes);
-    } else {
-      log("enviar datos de impresora");
-      var result = await SmartUsb.send(bytes);
-      log("$result");
-    }
+    await PrintBluetoothThermal.writeBytes(bytes);
   }
 }

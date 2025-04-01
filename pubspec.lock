@@ -312,14 +312,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
-  libusb_new:
-    dependency: transitive
-    description:
-      name: libusb_new
-      sha256: "3cc5e83ecd7ffd752479e26fe4a87a6c5c15ff1c51b494d7a373355f0b107f13"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   lints:
     dependency: transitive
     description:
@@ -685,14 +677,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  smart_usb:
-    dependency: "direct main"
-    description:
-      name: smart_usb
-      sha256: "0fbd3b198d916fddfda8595ae1a93ec76061c53e38455f9e760be31669889a4f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.4.2"
   source_map_stack_trace:
     dependency: transitive
     description:
@@ -821,6 +805,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.8"
+  translator:
+    dependency: "direct main"
+    description:
+      name: translator
+      sha256: "225ee22fc482736c593be5c232c0c5884b16d7cc42945c51ac73d9a0441dddcc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.7"
   typed_data:
     dependency: transitive
     description:
