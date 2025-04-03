@@ -16,9 +16,7 @@ class SDialogMpagoState extends StatefulWidget {
   final MainProvider provider;
   final MPagoIntentModel intencion;
   const SDialogMpagoState(
-      {super.key,
-      required this.intencion,
-      required this.provider});
+      {super.key, required this.intencion, required this.provider});
 
   @override
   State<SDialogMpagoState> createState() => _SDialogMpagoStateState();
@@ -70,8 +68,9 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
             pagoBool = true;
           });
           if (pago?.status == "approved") {
-            await PrintFinal.ticketCompra(
-                print: widget.provider.selectDevice, carrito: widget.provider.detalle);
+            /* await PrintFinal.ticketCompra(
+                print: widget.provider.selectDevice, carrito: widget.provider.detalle); */
+            widget.provider.detalle.clear();
           }
           _timer?.cancel();
         }

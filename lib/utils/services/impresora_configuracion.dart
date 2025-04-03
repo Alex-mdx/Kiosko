@@ -29,17 +29,17 @@ class ImpresoraConnect {
     log('almacen: ${device.map((e) => "${e.name} - ${e.connectionTypes}").toList()}');
     bool result = false;
     for (var element in device) {
-        PrinterModel newDevice = PrinterModel(
-            name: element.name!,
-            address: element.address,
-            connectionTypes: element.connectionTypes,
-            isConnected: element.isConnected,
-            productId: element.productId,
-            vendorId: element.vendorId);
-        log("${newDevice.toJson()}");
-        result = await PrintBluetoothThermal.connect(
-            macPrinterAddress: newDevice.address ?? "");
-      
+      PrinterModel newDevice = PrinterModel(
+          name: element.name!,
+          address: element.address,
+          connectionTypes: element.connectionTypes,
+          isConnected: element.isConnected,
+          productId: element.productId,
+          vendorId: element.vendorId);
+      log("${newDevice.toJson()}");
+      result = await PrintBluetoothThermal.connect(
+          macPrinterAddress: newDevice.address ?? "");
+
       Future.delayed(Duration(milliseconds: 500), () {
         debugPrint("$result");
         provider.devices.add(element);
@@ -54,22 +54,24 @@ class ImpresoraConnect {
     }
   }
 
-  static Future<PrinterModel?> verificar(PrinterModel actual) async {
-    log("${actual.toJson()}");
+  static Future<PrinterModel?> verificar(PrinterModel? actual) async {
     bool result = false;
-    await PrintBluetoothThermal.disconnect;
-    PrinterModel device = actual;
-    try {
-      showToast("Estableciendo conexion con la impresora");
-      result = await PrintBluetoothThermal.connect(
-              macPrinterAddress: actual.address ?? "");
+    PrinterModel? device = actual;
+    if (actual != null) {
+      log("${actual.toJson()}");
+      await PrintBluetoothThermal.disconnect;
+      try {
+        showToast("Estableciendo conexion con la impresora");
+        result = await PrintBluetoothThermal.connect(
+            macPrinterAddress: actual.address ?? "");
 
-      if (!result) {
-        showToast(
-            "No se pudo establecer conexion con la impresora\n${actual.connectionTypes}");
+        if (!result) {
+          showToast(
+              "No se pudo establecer conexion con la impresora\n${actual.connectionTypes}");
+        }
+      } catch (e) {
+        log("$e");
       }
-    } catch (e) {
-      log("$e");
     }
 
     return result ? device : null;

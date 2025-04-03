@@ -40,7 +40,7 @@ class POS extends StatelessWidget {
       builder: ((context, orientation, deviceType) => OKToast(
           position: ToastPosition.bottom,
           dismissOtherOnShow: true,
-          textStyle: TextStyle(fontSize: 12.sp, color: LightThemeColors.grey),
+          textStyle: TextStyle(fontSize: 14.sp, color: LightThemeColors.grey),
           duration: const Duration(seconds: 4),
           child: MaterialApp(
               debugShowCheckedModeBanner: false,

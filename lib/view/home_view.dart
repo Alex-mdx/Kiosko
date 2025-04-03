@@ -171,10 +171,11 @@ class _HomeViewState extends State<HomeViewOpen> {
             onRefresh: () async {},
             child: Scrollbar(
                 child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4, childAspectRatio: .8),
-                    padding: EdgeInsets.symmetric(horizontal: 1.w),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        childAspectRatio: .8,
+                        crossAxisSpacing: 0),
+                    padding: EdgeInsets.symmetric(horizontal: .5.w),
                     itemCount: productos.length,
                     itemBuilder: (context, index) => Card(
                         child: GestureDetector(
@@ -191,7 +192,7 @@ class _HomeViewState extends State<HomeViewOpen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   SizedBox(
-                                      height: (9).h,
+                                      height: (8).h,
                                       child: Image.asset(
                                           "${productos[index]["img"]}",
                                           errorBuilder: (context, error,
@@ -204,8 +205,7 @@ class _HomeViewState extends State<HomeViewOpen> {
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                          fontSize: (13).sp,
-                                          fontWeight: FontWeight.bold)),
+                                          height: .1.h, fontSize: (14).sp)),
                                   Text(
                                       "\$${Textos.moneda(moneda: double.parse(productos[index]["monto"].toString()))} MXN",
                                       textAlign: TextAlign.center,
@@ -242,34 +242,41 @@ class _HomeViewState extends State<HomeViewOpen> {
                   onPressed: () async {
                     if (widget.provider.selectDevice != null) {
                       if (widget.provider.pointNow != null) {
-                        MPagoIntentModel? intent;
-                        await Dialogs.showMorph(
-                            title: "Efectuar venta",
-                            description:
-                                "¿Desea que se le cobre por estos productos que ha ingresado con el monto de \$${Textos.moneda(moneda: widget.provider.totalSumatoria())}?",
-                            loadingTitle: "Enviando Intencion",
-                            onAcceptPressed: (context) async {
-                              var result = await ImpresoraConnect.verificar(
-                                  widget.provider.selectDevice!);
-                              if (result != null) {
-                                intent = await Mercadopago.sendIntencion(
-                                    widget.provider.pointNow!.id,
-                                    widget.provider.totalSumatoria());
+                        if (widget.provider.detalle.isNotEmpty) {
+                          MPagoIntentModel? intent;
+                          await Dialogs.showMorph(
+                              title: "Efectuar venta",
+                              description:
+                                  "¿Desea que se le cobre por estos productos que ha ingresado con el monto de \$${Textos.moneda(moneda: widget.provider.totalSumatoria())}?",
+                              loadingTitle: "Enviando Intencion",
+                              onAcceptPressed: (context) async {
+                                var result = await ImpresoraConnect.verificar(
+                                    widget.provider.selectDevice);
+                                if (result != null) {
+                                  intent = await Mercadopago.sendIntencion(
+                                      widget.provider.pointNow!.id,
+                                      widget.provider.totalSumatoria());
+                                } else {
+                                  showToast(
+                                      "No hay ninguna impresora conectada");
+                                }
                                 Navigation.pop();
-                              } else {
-                                showToast("No hay ninguna impresora conectada");
-                              }
-                            });
-                        if (intent != null) {
-                          await showDialog(
-                              context: context,
-                              builder: (context) => SDialogMpagoState(
-                                  intencion: intent!,
-                                  provider: widget.provider));
+                              });
+                          if (intent != null) {
+                            await showDialog(
+                                context: context,
+                                builder: (context) => SDialogMpagoState(
+                                    intencion: intent!,
+                                    provider: widget.provider));
+                          }
+                        } else {
+                          showToast("No ha ingresado ningun producto");
                         }
                       } else {
                         showToast("No hay ninguna terminal conectada");
                       }
+                    } else {
+                      showToast("Conecte una impresora");
                     }
                   },
                   child: Text("Pagar",
