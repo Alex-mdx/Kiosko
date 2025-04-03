@@ -12,18 +12,21 @@ class BannerView extends StatefulWidget {
 class _MyWidgetState extends State<BannerView> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: Center(
-            child: Image.asset("assets/banner_example.jpg",
-                fit: BoxFit.fill,
-                height: double.infinity,
-                gaplessPlayback: true,
-                alignment: Alignment.center)),
-        floatingActionButton: ElevatedButton.icon(
-            onPressed: () async => await Navigation.pushNamed(route: 'home'),
-            label: Text("Tocar para iniciar su pedido",
-                style:
-                    TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold))),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat);
+    return PopScope(canPop: false,
+      child: Scaffold(
+          body: Center(
+              child: Image.asset("assets/banner_example.jpg",
+                  fit: BoxFit.fill,
+                  height: double.infinity,
+                  gaplessPlayback: true,
+                  alignment: Alignment.center)),
+          floatingActionButton: ElevatedButton.icon(
+              onPressed: () async =>
+                  await Navigation.pushReplacementNamed(routeName: 'home'),
+              label: Text("Tocar para iniciar su pedido",
+                  style:
+                      TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold))),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat),
+    );
   }
 }

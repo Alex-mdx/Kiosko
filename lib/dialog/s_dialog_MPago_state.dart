@@ -6,7 +6,6 @@ import 'package:kiosko/models/MPago_payment_model.dart';
 import 'package:kiosko/models/Mpago_pay_intent_model.dart';
 import 'package:kiosko/theme/app_colors.dart';
 import 'package:kiosko/utils/main_provider.dart';
-import 'package:kiosko/utils/print_final.dart';
 import 'package:kiosko/utils/services/mercadopago.dart';
 import 'package:kiosko/utils/services/navigation_service.dart';
 import 'package:sizer/sizer.dart';

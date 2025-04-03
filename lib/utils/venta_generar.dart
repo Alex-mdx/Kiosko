@@ -26,4 +26,12 @@ class VentaGenerar {
       provider.detalle.add(carrito);
     }
   }
+
+  static double sumatoria(List<double> montos) {
+    var sumador = 0.0;
+    for (var element in montos) {
+      sumador += element;
+    }
+    return sumador;
+  }
 }
