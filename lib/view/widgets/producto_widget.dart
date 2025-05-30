@@ -9,7 +9,7 @@ import '../../utils/textos.dart';
 import '../../utils/venta_generar.dart';
 
 class ProductoWidget extends StatefulWidget {
-  final List<Map<String,dynamic>> productos;
+  final List<Map<String, dynamic>> productos;
   const ProductoWidget({super.key, required this.productos});
 
   @override

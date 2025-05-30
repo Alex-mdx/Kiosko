@@ -140,121 +140,121 @@ class _HomeViewState extends State<HomeViewOpen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
-      child: Scaffold(
-          appBar: AppBar(
-              title: Text("Seleccione sus productos",
-                  style: TextStyle(fontSize: 16.sp)),
-              actions: [
-                OverflowBar(children: [
-                  IconButton(
-                      onPressed: () => showDialog(
-                              context: context,
-                              builder: (context) => SDialogProductos())
-                          .whenComplete(() => setState(() {})),
-                      icon: Stack(alignment: Alignment.topCenter, children: [
-                        Icon(Icons.shopping_cart_rounded,
-                            size: 24.sp,
-                            color: widget.provider.detalle.isEmpty
-                                ? LightThemeColors.darkBlue
-                                : LightThemeColors.background),
-                        Padding(
-                            padding: EdgeInsets.only(top: .5.h),
-                            child: Text(
-                                Textos.moneda(
-                                    moneda: VentaGenerar.sumatoria(widget
-                                        .provider.detalle
-                                        .map((e) => e.cantidad)
-                                        .toList())),
-                                style: TextStyle(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.bold)))
-                      ])),
-                  IconButton.filled(
-                      iconSize: 18.sp,
-                      onPressed: () => showDialog(
-                          context: context,
-                          builder: (context) =>
-                              Dialog(child: DialogImpresora())),
-                      icon: Icon(
-                          widget.provider.selectDevice == null
-                              ? Icons.print_disabled
-                              : Icons.print,
-                          color: LightThemeColors.background)),
-                  ElevatedButton(
-                      onPressed: () => showDialog(
-                          context: context,
-                          builder: (context) => SDialogMpPoint()),
-                      child: Icon(Icons.point_of_sale,
-                          size: 20.sp,
-                          color: widget.provider.pointNow == null
-                              ? LightThemeColors.darkGrey
-                              : LightThemeColors.green))
-                ])
-              ]),
-          body: ProductoWidget(productos: productos),
-          floatingActionButton:
-              Column(mainAxisSize: MainAxisSize.min, children: [
-            ElevatedButton(
-                style: ButtonStyle(
-                    backgroundColor:
-                        WidgetStatePropertyAll(LightThemeColors.red)),
-                onPressed: () async {
-                  widget.provider.detalle.clear();
-                  await Navigation.pushReplacementNamed(routeName: 'banner');
-                },
-                child: Text("Cancelar",
-                    style: TextStyle(
-                        fontSize: 14.sp, color: LightThemeColors.grey))),
-            ElevatedButton(
-                style: ButtonStyle(
-                    backgroundColor:
-                        WidgetStatePropertyAll(LightThemeColors.primary)),
-                onPressed: () async {
-                  if (widget.provider.selectDevice != null) {
-                    if (widget.provider.pointNow != null) {
-                      if (widget.provider.detalle.isNotEmpty) {
-                        MPagoIntentModel? intent;
-                        await Dialogs.showMorph(
-                            title: "Efectuar venta",
-                            description:
-                                "¿Desea que se le cobre por estos productos que ha ingresado con el monto de \$${Textos.moneda(moneda: widget.provider.totalSumatoria())}?",
-                            loadingTitle: "Enviando Intencion",
-                            onAcceptPressed: (context) async {
-                              var result = await ImpresoraConnect.verificar(
-                                  widget.provider.selectDevice);
-                              if (result != null) {
-                                intent = await Mercadopago.sendIntencion(
-                                    widget.provider.pointNow!.id,
-                                    widget.provider.totalSumatoria());
-                              } else {
-                                showToast("No hay ninguna impresora conectada");
-                              }
-                              Navigation.pop();
-                            });
-                        if (intent != null) {
-                          await showDialog(
-                              context: context,
-                              builder: (context) => SDialogMpagoState(
-                                  intencion: intent!,
-                                  provider: widget.provider));
+        canPop: false,
+        child: Scaffold(
+            appBar: AppBar(
+                title: Text("Seleccione sus productos",
+                    style: TextStyle(fontSize: 16.sp)),
+                actions: [
+                  OverflowBar(children: [
+                    IconButton(
+                        onPressed: () => showDialog(
+                                context: context,
+                                builder: (context) => SDialogProductos())
+                            .whenComplete(() => setState(() {})),
+                        icon: Stack(alignment: Alignment.topCenter, children: [
+                          Icon(Icons.shopping_cart_rounded,
+                              size: 24.sp,
+                              color: widget.provider.detalle.isEmpty
+                                  ? LightThemeColors.darkBlue
+                                  : LightThemeColors.background),
+                          Padding(
+                              padding: EdgeInsets.only(top: .5.h),
+                              child: Text(
+                                  Textos.moneda(
+                                      moneda: VentaGenerar.sumatoria(widget
+                                          .provider.detalle
+                                          .map((e) => e.cantidad)
+                                          .toList())),
+                                  style: TextStyle(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.bold)))
+                        ])),
+                    IconButton.filled(
+                        iconSize: 18.sp,
+                        onPressed: () => showDialog(
+                            context: context,
+                            builder: (context) =>
+                                Dialog(child: DialogImpresora())),
+                        icon: Icon(
+                            widget.provider.selectDevice == null
+                                ? Icons.print_disabled
+                                : Icons.print,
+                            color: LightThemeColors.background)),
+                    ElevatedButton(
+                        onPressed: () => showDialog(
+                            context: context,
+                            builder: (context) => SDialogMpPoint()),
+                        child: Icon(Icons.point_of_sale,
+                            size: 20.sp,
+                            color: widget.provider.pointNow == null
+                                ? LightThemeColors.darkGrey
+                                : LightThemeColors.green))
+                  ])
+                ]),
+            body: ProductoWidget(productos: productos),
+            floatingActionButton:
+                Column(mainAxisSize: MainAxisSize.min, children: [
+              ElevatedButton(
+                  style: ButtonStyle(
+                      backgroundColor:
+                          WidgetStatePropertyAll(LightThemeColors.red)),
+                  onPressed: () async {
+                    widget.provider.detalle.clear();
+                    await Navigation.pushReplacementNamed(routeName: 'banner');
+                  },
+                  child: Text("Cancelar",
+                      style: TextStyle(
+                          fontSize: 14.sp, color: LightThemeColors.grey))),
+              ElevatedButton(
+                  style: ButtonStyle(
+                      backgroundColor:
+                          WidgetStatePropertyAll(LightThemeColors.primary)),
+                  onPressed: () async {
+                    if (widget.provider.selectDevice != null) {
+                      if (widget.provider.pointNow != null) {
+                        if (widget.provider.detalle.isNotEmpty) {
+                          MPagoIntentModel? intent;
+                          await Dialogs.showMorph(
+                              title: "Efectuar venta",
+                              description:
+                                  "¿Desea que se le cobre por estos productos que ha ingresado con el monto de \$${Textos.moneda(moneda: widget.provider.totalSumatoria())}?",
+                              loadingTitle: "Enviando Intencion",
+                              onAcceptPressed: (context) async {
+                                var result = await ImpresoraConnect.verificar(
+                                    widget.provider.selectDevice);
+                                if (result != null) {
+                                  intent = await Mercadopago.sendIntencion(
+                                      widget.provider.pointNow!.id,
+                                      widget.provider.totalSumatoria());
+                                } else {
+                                  showToast(
+                                      "No hay ninguna impresora conectada");
+                                }
+                                Navigation.pop();
+                              });
+                          if (intent != null) {
+                            await showDialog(
+                                context: context,
+                                builder: (context) => SDialogMpagoState(
+                                    intencion: intent!,
+                                    provider: widget.provider));
+                          }
+                        } else {
+                          showToast("No ha ingresado ningun producto");
                         }
                       } else {
-                        showToast("No ha ingresado ningun producto");
+                        showToast("No hay ninguna terminal conectada");
                       }
                     } else {
-                      showToast("No hay ninguna terminal conectada");
+                      showToast("Conecte una impresora");
                     }
-                  } else {
-                    showToast("Conecte una impresora");
-                  }
-                },
-                child: Text("Pagar",
-                    style: TextStyle(
-                        fontSize: 14.sp, color: LightThemeColors.grey)))
-          ]),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerDocked),
-    );
+                  },
+                  child: Text("Pagar",
+                      style: TextStyle(
+                          fontSize: 14.sp, color: LightThemeColors.grey)))
+            ]),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerDocked));
   }
 }

@@ -266,7 +266,7 @@ class _MyWidgetState extends State<DialogImpresora> {
                       showToast('Dispositivo Almacenado Disponible');
                     }),
         title: Text(
-            '${device.name} ${deviceActual ? '| ${mmPaper[provider.selectDevice!.paper!.value]}' : ''}',
+            '${device.name} ${deviceActual ? '| ${mmPaper[provider.selectDevice?.paper?.value]}' : ''}',
             style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle:
             Text(device.address ?? '${device.productId} - ${device.vendorId}'),

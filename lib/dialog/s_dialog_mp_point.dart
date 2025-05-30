@@ -61,52 +61,56 @@ class _SDialogMpPointState extends State<SDialogMpPoint> {
                     itemCount: points.length,
                     itemBuilder: (context, index) {
                       MPagoPointModel point = points[index];
-                      return ListTile(
-                          leading: provider.pointNow?.id == point.id
-                              ? Icon(Icons.perm_device_information,
-                                  color: LightThemeColors.background,
-                                  size: 18.sp)
-                              : null,
-                          trailing: IconButton.filled(
-                              onPressed: () async {
-                                if (point.operatingMode == "PDV") {
-                                  await Dialogs.showMorph(
-                                      title: "Enlanzar",
-                                      description:
-                                          "¿Desea enlazar esta terminal ${point.id}, con este punto de venta?",
-                                      loadingTitle: "Enlanzando",
-                                      onAcceptPressed: (context) async {
-                                        MPagoPointModel pago = MPagoPointModel(
-                                            id: point.id,
-                                            posId: point.posId,
-                                            storeId: point.storeId,
-                                            externalPosId: point.externalPosId,
-                                            operatingMode: point.operatingMode);
-                                        await MpagoPointController.insert(
-                                            point: pago);
-                                        provider.pointNow = pago;
-                                        showToast(
-                                            "Terminal Mercado Pago Point ${pago.id}\nEnlazado con este dipositivo");
-                                        Future.delayed(Duration.zero, () {
-                                          Navigation.pop();
-                                        });
-                                      });
-                                } else {
-                                  showToast(
-                                      "Terminal no valida\nConfigure esta terminal como un punto de venta desde su cuenta de Mercado Pago");
-                                }
-                              },
-                              icon: Icon(Icons.link,
-                                  color: LightThemeColors.green),
-                              iconSize: 18.sp),
-                          tileColor: point.operatingMode == "PDV"
-                              ? LightThemeColors.green
-                              : LightThemeColors.red,
-                          title:
-                              Text(point.id, style: TextStyle(fontSize: 12.sp)),
-                          subtitle: Text(
-                              "Pos id: ${point.posId} - Store id: ${point.storeId}",
-                              style: TextStyle(fontSize: 12.sp)));
+                      return Padding(
+                          padding: EdgeInsets.only(bottom: .5.h),
+                          child: ListTile(
+                              leading: provider.pointNow?.id == point.id
+                                  ? Icon(Icons.perm_device_information,
+                                      color: LightThemeColors.background,
+                                      size: 18.sp)
+                                  : null,
+                              trailing: IconButton.filled(
+                                  onPressed: () async {
+                                    if (point.operatingMode == "PDV") {
+                                      await Dialogs.showMorph(
+                                          title: "Enlanzar",
+                                          description:
+                                              "¿Desea enlazar esta terminal ${point.id}, con este punto de venta?",
+                                          loadingTitle: "Enlanzando",
+                                          onAcceptPressed: (context) async {
+                                            MPagoPointModel pago =
+                                                MPagoPointModel(
+                                                    id: point.id,
+                                                    posId: point.posId,
+                                                    storeId: point.storeId,
+                                                    externalPosId:
+                                                        point.externalPosId,
+                                                    operatingMode:
+                                                        point.operatingMode);
+                                            await MpagoPointController.insert(
+                                                point: pago);
+                                            provider.pointNow = pago;
+                                            showToast(
+                                                "Terminal Mercado Pago Point ${pago.id}\nEnlazado con este dipositivo");
+
+                                            Navigation.pop();
+                                          });
+                                    } else {
+                                      showToast(
+                                          "Terminal no valida\nConfigure esta terminal como un punto de venta desde su cuenta de Mercado Pago");
+                                    }
+                                  },
+                                  icon: Icon(Icons.link,
+                                      color: LightThemeColors.green),
+                                  iconSize: 18.sp),
+                              tileColor: point.operatingMode == "PDV"
+                                  ? LightThemeColors.green
+                                  : LightThemeColors.red,
+                              title: Text(point.id,
+                                  style: TextStyle(fontSize: 12.sp)),
+                              subtitle: Text(
+                                  "Pos id: ${point.posId} - Store id: ${point.storeId}",
+                                  style: TextStyle(fontSize: 12.sp))));
                     }))
       ])
     ]));

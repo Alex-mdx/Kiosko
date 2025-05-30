@@ -11,6 +11,8 @@ import 'package:kiosko/utils/services/navigation_service.dart';
 import 'package:sizer/sizer.dart';
 import 'package:translator/translator.dart';
 
+import '../utils/print_final.dart';
+
 class SDialogMpagoState extends StatefulWidget {
   final MainProvider provider;
   final MPagoIntentModel intencion;
@@ -67,12 +69,14 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
             pagoBool = true;
           });
           if (pago?.status == "approved") {
-            /* await PrintFinal.ticketCompra(
-                print: widget.provider.selectDevice, carrito: widget.provider.detalle); */
+            await PrintFinal.ticketCompra(
+                print: widget.provider.selectDevice,
+                carrito: widget.provider.detalle);
             widget.provider.detalle.clear();
           }
           _timer?.cancel();
         }
+        Future.delayed(Duration(seconds: 3), () => Navigation.pop());
       }
     });
   }
@@ -87,10 +91,10 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text("Estado de pago",
                       style: TextStyle(
-                          fontSize: 15.sp, fontWeight: FontWeight.bold)),
+                          fontSize: 16.sp, fontWeight: FontWeight.bold)),
                   Column(children: [
                     Text(Mercadopago.string(state: intencionPago?.state ?? ""),
-                        style: TextStyle(fontSize: 15.sp)),
+                        style: TextStyle(fontSize: 16.sp)),
                     if (pago != null)
                       Card(
                           color: pago?.status == "rejected"
@@ -101,38 +105,21 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
                               child: Column(children: [
                                 Text("Seguimiento de pago",
                                     style: TextStyle(
-                                        fontSize: 14.sp,
+                                        fontSize: 15.sp,
                                         fontWeight: FontWeight.bold)),
                                 pagoBool
                                     ? Text("$estado\n $descripcion",
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(fontSize: 14.sp))
+                                        style: TextStyle(fontSize: 15.sp))
                                     : CircularProgressIndicator()
                               ]))),
-                    if (intencionPago?.state == "FINISHED" ||
-                        intencionPago?.state == "CANCELED")
-                      ElevatedButton.icon(
-                          onPressed: () {
-                            Navigation.pop();
-                          },
-                          label: Text(
-                              pago?.status == "rejected"
-                                  ? "Reintentar"
-                                  : "Aceptar",
-                              style: TextStyle(
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.bold)),
-                          icon: pago?.status == "rejected"
-                              ? Icon(Icons.cancel_sharp,
-                                  size: 18.sp, color: LightThemeColors.red)
-                              : Icon(Icons.check,
-                                  size: 18.sp, color: LightThemeColors.green))
-                    else
+                    if (intencionPago?.state != "FINISHED" &&
+                        intencionPago?.state != "CANCELED")
                       Column(children: [
                         Text(
-                            "Realice el pago del monto total de su pedido ingresando su tarjeta\nen la terminal correspondiente",
+                            "Ingrese su tarjeta en la terminal correspondiente",
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 14.sp)),
+                            style: TextStyle(fontSize: 15.sp)),
                         CircularProgressIndicator()
                       ])
                   ])

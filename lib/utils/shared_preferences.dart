@@ -15,4 +15,8 @@ class Preferencias {
       static String get servidorLicencia => _preferences?.getString('servidor') ?? "";
   static set servidorLicencia(String value) =>
       _preferences?.setString('servidor', value);
+
+      static bool get imprimirMP => _preferences?.getBool('imprimirmp') ?? false;
+  static set imprimirMP(bool value) =>
+      _preferences?.setBool('imprimirmp', value);
 }
