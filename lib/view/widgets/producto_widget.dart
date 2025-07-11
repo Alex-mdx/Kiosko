@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:kiosko/controllers/producto_controller.dart';
+import 'package:kiosko/theme/app_colors.dart';
 import 'package:kiosko/utils/main_provider.dart';
+import 'package:kiosko/utils/services/dialog_services.dart';
+import 'package:kiosko/utils/services/navigation_service.dart';
+import 'package:kiosko/view/widgets/card_producto_widget.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:provider/provider.dart';
+import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:sizer/sizer.dart';
 
-import '../../theme/app_colors.dart';
-import '../../utils/textos.dart';
-import '../../utils/venta_generar.dart';
-
 class ProductoWidget extends StatefulWidget {
-  final List<Map<String, dynamic>> productos;
-  const ProductoWidget({super.key, required this.productos});
+  const ProductoWidget({super.key});
 
   @override
   State<ProductoWidget> createState() => _ProductoWidgetState();
@@ -20,52 +21,82 @@ class _ProductoWidgetState extends State<ProductoWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MainProvider>(context);
-    return LiquidPullToRefresh(
-        springAnimationDurationInMilliseconds: 500,
-        onRefresh: () async {},
-        child: Scrollbar(
-            child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    childAspectRatio: .8,
-                    crossAxisSpacing: 0),
-                padding: EdgeInsets.symmetric(horizontal: .5.w),
-                itemCount: widget.productos.length,
-                itemBuilder: (context, index) => Card(
-                    child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          setState(() {
-                            VentaGenerar.addCarrito(
-                                provider: provider,
-                                producto: widget.productos[index]);
-                          });
-                        },
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(
-                                  height: (8).h,
-                                  child: Image.asset(
-                                      "${widget.productos[index]["img"]}",
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              Image.asset("assets/no_img.jpg",
-                                                  fit: BoxFit.contain),
-                                      fit: BoxFit.contain)),
-                              Text("${widget.productos[index]["descripcion"]}",
-                                  textAlign: TextAlign.center,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      height: .1.h, fontSize: (14).sp)),
-                              Text(
-                                  "\$${Textos.moneda(moneda: double.parse(widget.productos[index]["monto"].toString()))} MXN",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      color: LightThemeColors.green,
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.bold))
-                            ]))))));
+    return FutureBuilder(
+        future: ProductosController.getItems(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return snapshot.data!.isEmpty
+                ? Center(
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                        Text("Lista de productos vacia",
+                            style: TextStyle(
+                                fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                        ClipRRect(
+                            borderRadius: BorderRadiusGeometry.circular(40),
+                            child: Container(
+                                color: LightThemeColors.darkBlue,
+                                child: RiveAnimatedIcon(
+                                    onTap: () async => await Dialogs.showMorph(
+                                        title: "Descargar productos",
+                                        description:
+                                            "Se va a descargar el catalogo de productos para el kiosko",
+                                        loadingTitle: "Descargando",
+                                        onAcceptPressed: (context) async {
+                                          await ProductosController
+                                              .getApiProductos(provider);
+                                          setState(() {
+                                            Navigation.pop();
+                                          });
+                                        }),
+                                    riveIcon: RiveIcon.refresh,
+                                    width: 12.w,
+                                    height: 12.w,
+                                    color: Colors.green,
+                                    strokeWidth: 3.w,
+                                    loopAnimation: true)))
+                      ]))
+                : LiquidPullToRefresh(
+                    springAnimationDurationInMilliseconds: 500,
+                    onRefresh: () async =>
+                        await ProductosController.getApiProductos(provider),
+                    child: Scrollbar(
+                        child: GridView.builder(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 4,
+                                    childAspectRatio: .8,
+                                    crossAxisSpacing: 0),
+                            padding: EdgeInsets.symmetric(horizontal: .5.w),
+                            itemCount: snapshot.data!.length,
+                            itemBuilder: (context, index) {
+                              var producto = snapshot.data![index];
+                              return CardProductoWidget(producto: producto);
+                            })));
+          } else if (snapshot.hasError) {
+            return Center(
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                  Text("Error\n${snapshot.error}",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16.sp)),
+                  RiveAnimatedIcon(
+                      riveIcon: RiveIcon.warning,
+                      width: 50,
+                      height: 50,
+                      color: Colors.red,
+                      strokeWidth: 3,
+                      loopAnimation: true)
+                ]));
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        });
   }
 }

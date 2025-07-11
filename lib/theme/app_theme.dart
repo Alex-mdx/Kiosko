@@ -126,7 +126,7 @@ class AppTheme {
           radius: Radius.circular(24),
           thumbColor: WidgetStatePropertyAll(Colors.grey)),
       scaffoldBackgroundColor: LightThemeColors.background,
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius)),
@@ -160,7 +160,7 @@ class AppTheme {
             borderSide: const BorderSide(color: Colors.transparent, width: 2)),
         // prefixIcon: Icon( Icons.verified_user_outlined ),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
@@ -300,7 +300,7 @@ class AppTheme {
         trackColor: WidgetStateProperty.all<Color>(
             DarkThemeColors.primary.withAlpha(50)),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
         ),
@@ -308,7 +308,7 @@ class AppTheme {
       ),
       //   dialogBackgroundColor: AppColorsLightTheme.background,
       scaffoldBackgroundColor: DarkThemeColors.background,
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: DarkThemeColors.cardBackground,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius)),

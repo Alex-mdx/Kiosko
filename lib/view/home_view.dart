@@ -16,7 +16,6 @@ import 'package:sizer/sizer.dart';
 
 import '../models/MPago_intent_model.dart';
 import '../utils/services/dialog_services.dart';
-import '../utils/venta_generar.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -155,17 +154,12 @@ class _HomeViewState extends State<HomeViewOpen> {
                         icon: Stack(alignment: Alignment.topCenter, children: [
                           Icon(Icons.shopping_cart_rounded,
                               size: 24.sp,
-                              color: widget.provider.detalle.isEmpty
+                              color: widget.provider.listaDetalle.isEmpty
                                   ? LightThemeColors.darkBlue
                                   : LightThemeColors.background),
                           Padding(
                               padding: EdgeInsets.only(top: .5.h),
-                              child: Text(
-                                  Textos.moneda(
-                                      moneda: VentaGenerar.sumatoria(widget
-                                          .provider.detalle
-                                          .map((e) => e.cantidad)
-                                          .toList())),
+                              child: Text("#{widget.provider.listaDetalle.length}",
                                   style: TextStyle(
                                       fontSize: 13.sp,
                                       fontWeight: FontWeight.bold)))
@@ -192,7 +186,7 @@ class _HomeViewState extends State<HomeViewOpen> {
                                 : LightThemeColors.green))
                   ])
                 ]),
-            body: ProductoWidget(productos: productos),
+            body: ProductoWidget(),
             floatingActionButton:
                 Column(mainAxisSize: MainAxisSize.min, children: [
               ElevatedButton(
@@ -200,59 +194,60 @@ class _HomeViewState extends State<HomeViewOpen> {
                       backgroundColor:
                           WidgetStatePropertyAll(LightThemeColors.red)),
                   onPressed: () async {
-                    widget.provider.detalle.clear();
+                    widget.provider.listaDetalle.clear();
                     await Navigation.pushReplacementNamed(routeName: 'banner');
                   },
                   child: Text("Cancelar",
                       style: TextStyle(
                           fontSize: 14.sp, color: LightThemeColors.grey))),
-              ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor:
-                          WidgetStatePropertyAll(LightThemeColors.primary)),
-                  onPressed: () async {
-                    if (widget.provider.selectDevice != null) {
-                      if (widget.provider.pointNow != null) {
-                        if (widget.provider.detalle.isNotEmpty) {
-                          MPagoIntentModel? intent;
-                          await Dialogs.showMorph(
-                              title: "Efectuar venta",
-                              description:
-                                  "¿Desea que se le cobre por estos productos que ha ingresado con el monto de \$${Textos.moneda(moneda: widget.provider.totalSumatoria())}?",
-                              loadingTitle: "Enviando Intencion",
-                              onAcceptPressed: (context) async {
-                                var result = await ImpresoraConnect.verificar(
-                                    widget.provider.selectDevice);
-                                if (result != null) {
-                                  intent = await Mercadopago.sendIntencion(
-                                      widget.provider.pointNow!.id,
-                                      widget.provider.totalSumatoria());
-                                } else {
-                                  showToast(
-                                      "No hay ninguna impresora conectada");
-                                }
-                                Navigation.pop();
-                              });
-                          if (intent != null) {
-                            await showDialog(
-                                context: context,
-                                builder: (context) => SDialogMpagoState(
-                                    intencion: intent!,
-                                    provider: widget.provider));
+              if (widget.provider.listaDetalle.isNotEmpty)
+                ElevatedButton(
+                    style: ButtonStyle(
+                        backgroundColor:
+                            WidgetStatePropertyAll(LightThemeColors.primary)),
+                    onPressed: () async {
+                      if (widget.provider.selectDevice != null) {
+                        if (widget.provider.pointNow != null) {
+                          if (widget.provider.listaDetalle.isNotEmpty) {
+                            MPagoIntentModel? intent;
+                            await Dialogs.showMorph(
+                                title: "Efectuar venta",
+                                description:
+                                    "¿Desea que se le cobre por estos productos que ha ingresado con el monto de \$${Textos.moneda(moneda: widget.provider.totalSumatoria())}?",
+                                loadingTitle: "Enviando Intencion",
+                                onAcceptPressed: (context) async {
+                                  var result = await ImpresoraConnect.verificar(
+                                      widget.provider.selectDevice);
+                                  if (result != null) {
+                                    intent = await Mercadopago.sendIntencion(
+                                        widget.provider.pointNow!.id,
+                                        widget.provider.totalSumatoria());
+                                  } else {
+                                    showToast(
+                                        "No hay ninguna impresora conectada");
+                                  }
+                                  Navigation.pop();
+                                });
+                            if (intent != null) {
+                              await showDialog(
+                                  context: context,
+                                  builder: (context) => SDialogMpagoState(
+                                      intencion: intent!,
+                                      provider: widget.provider));
+                            }
+                          } else {
+                            showToast("No ha ingresado ningun producto");
                           }
                         } else {
-                          showToast("No ha ingresado ningun producto");
+                          showToast("No hay ninguna terminal conectada");
                         }
                       } else {
-                        showToast("No hay ninguna terminal conectada");
+                        showToast("Conecte una impresora");
                       }
-                    } else {
-                      showToast("Conecte una impresora");
-                    }
-                  },
-                  child: Text("Pagar",
-                      style: TextStyle(
-                          fontSize: 14.sp, color: LightThemeColors.grey)))
+                    },
+                    child: Text("Pagar",
+                        style: TextStyle(
+                            fontSize: 14.sp, color: LightThemeColors.grey)))
             ]),
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.centerDocked));

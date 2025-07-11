@@ -71,8 +71,8 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
           if (pago?.status == "approved") {
             await PrintFinal.ticketCompra(
                 print: widget.provider.selectDevice,
-                carrito: widget.provider.detalle);
-            widget.provider.detalle.clear();
+                carrito: widget.provider.listaDetalle);
+            widget.provider.listaDetalle.clear();
           }
           _timer?.cancel();
         }

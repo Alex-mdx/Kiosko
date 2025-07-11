@@ -2,10 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:kiosko/controllers/MPago_point_controller.dart';
 import 'package:kiosko/controllers/user_controller.dart';
 import 'package:kiosko/models/MPago_point_model.dart';
-import 'package:kiosko/models/producto_demo_model.dart';
+import 'package:kiosko/models/direccion_model.dart';
+import 'package:kiosko/models/empresa_model.dart';
+import 'package:kiosko/models/forma_pago_model.dart';
+import 'package:kiosko/models/sucursal_model.dart';
 import 'package:kiosko/models/usuario_model.dart';
 
 import '../models/device_model.dart';
+import '../models/venta_detalle_model.dart';
 
 class MainProvider with ChangeNotifier {
   double _cargaApi = 0;
@@ -43,18 +47,46 @@ class MainProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<ProductoDemoModel> _detalle = [];
-  List<ProductoDemoModel> get detalle => _detalle;
-  set detalle(List<ProductoDemoModel> valor) {
-    _detalle = valor;
+  List<Detalles> _listaDetalle = [];
+  List<Detalles> get listaDetalle => _listaDetalle;
+  set listaDetalle(List<Detalles> valor) {
+    _listaDetalle = valor;
+    notifyListeners();
+  }
+
+  List<EmpresaModel> _empresas = [];
+  List<EmpresaModel> get empresas => _empresas;
+  set empresas(List<EmpresaModel> valor) {
+    _empresas = valor;
+    notifyListeners();
+  }
+
+  List<SucursalModel> _sucursales = [];
+  List<SucursalModel> get sucursales => _sucursales;
+  set sucursales(List<SucursalModel> valor) {
+    _sucursales = valor;
+    notifyListeners();
+  }
+
+  List<DireccionModel> _direcciones = [];
+  List<DireccionModel> get direcciones => _direcciones;
+  set direcciones(List<DireccionModel> valor) {
+    _direcciones = valor;
+    notifyListeners();
+  }
+
+  List<FormaPagoModel> _formaPago = [];
+  List<FormaPagoModel> get formaPago => _formaPago;
+  set formaPago(List<FormaPagoModel> valor) {
+    _formaPago = valor;
     notifyListeners();
   }
 
   //!FUNCIONES
   double totalSumatoria() {
     var monto = 0.0;
-    for (var element in detalle) {
-      monto += element.total;
+    for (var element in listaDetalle) {
+      monto += element.total ?? 0;
     }
     return monto;
   }

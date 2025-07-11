@@ -72,9 +72,7 @@ class UsuarioModel {
           int? contactoId,
           int? cuentaBancariaId,
           int? empleadoNominaId,
-          String? correoAdministrador,
-          String? empleadoNomina,
-          String? apertura}) =>
+          String? empleadoNomina}) =>
       UsuarioModel(
           id: id ?? this.id,
           uuid: uuid ?? this.uuid,

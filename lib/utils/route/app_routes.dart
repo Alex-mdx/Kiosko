@@ -7,7 +7,7 @@ import '../../view/login_view.dart';
 import '../shared_preferences.dart';
 
 class AppRoutes {
-  static final rutaInicial = !Preferencias.logeado
+  static final rutaInicial = Preferencias.logeado
           ? 'home'
           : 'login';
 

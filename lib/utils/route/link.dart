@@ -2,10 +2,9 @@ import '../shared_preferences.dart';
 
 class Link {
   static bool defecto = false;
-  static final apiSoferp =
-      defecto
-          ? Preferencias.servidorLicencia
-          : 'https://ceiba.soferp.com'; //https://test2.soferp.com
+  static final apiSoferp = defecto
+      ? Preferencias.servidorLicencia
+      : 'https://test2.soferp-10.com'; //https://test2.soferp.com
   static String apiLogin = "$apiSoferp/app/login";
   static String apiDireccion = "$apiSoferp/app/direcciones";
   static String apiEmpresa =
@@ -17,6 +16,7 @@ class Link {
   static String apiImagen = "$apiSoferp/img?file=";
   static String apiUrlProducto =
       "$apiSoferp/app/productos/impuestos?database_id=";
+  static String apiUrlPrecios = "$apiSoferp/app/listas_precio";
 }
 
 class Servidor {

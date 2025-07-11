@@ -29,9 +29,15 @@ class _SDialogMpPointState extends State<SDialogMpPoint> {
   Future<void> initPoints() async {
     showToast("Buscando terminales viculadas a su cuenta");
     var mPoint = await Mercadopago.getTPoint();
+    if(mounted){
     setState(() {
       points = mPoint;
-    });
+    });}
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override

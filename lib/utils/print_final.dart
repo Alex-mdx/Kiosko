@@ -1,13 +1,13 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:kiosko/models/device_model.dart';
-import 'package:kiosko/models/producto_demo_model.dart';
+import 'package:kiosko/models/venta_detalle_model.dart';
 import 'package:kiosko/utils/textos.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 
 class PrintFinal {
   static Future<void> ticketCompra(
       {required PrinterModel? print,
-      required List<ProductoDemoModel> carrito}) async {
+      required List<Detalles> carrito}) async {
     final profile = await CapabilityProfile.load();
 
     final generator = Generator(print!.paper!, profile);
@@ -33,14 +33,14 @@ class PrintFinal {
     bytes += generator.hr();
     double totalizado = 0.0;
     for (var pr in carrito) {
-      totalizado += pr.total;
+      totalizado += pr.total ?? 0;
       bytes += generator.row(multiLine: true, [
         PosColumn(
-            text: Textos.moneda(moneda: pr.cantidad),
+            text: "${pr.cantidad}",
             width: 2,
             styles: const PosStyles(align: PosAlign.right)),
         PosColumn(
-            text: Textos.normalizar(pr.concepto),
+            text: Textos.normalizar(pr.concepto ?? "Sin nombre"),
             width: 7,
             styles: const PosStyles(align: PosAlign.left)),
         PosColumn(
