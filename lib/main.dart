@@ -5,7 +5,7 @@ import 'package:kiosko/utils/main_provider.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
 import 'utils/route/app_routes.dart';
@@ -42,11 +42,18 @@ class POS extends StatelessWidget {
           dismissOtherOnShow: true,
           textStyle: TextStyle(fontSize: 14.sp, color: LightThemeColors.grey),
           duration: const Duration(seconds: 4),
-          child: MaterialApp(
+          child: MaterialApp(localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate
+              ],
+              supportedLocales: const [
+                Locale('es')
+              ],
               debugShowCheckedModeBanner: false,
               title: 'kiosko',
               theme: AppTheme.lightTheme,
               navigatorKey: NavigationKey.navigatorKey,
-              initialRoute: AppRoutes.rutaInicial,
-              routes: AppRoutes.getAppRutas()))));
+              initialRoute: AppRoutes.initialRoute,
+              routes: AppRoutes.routes))));
 }

@@ -7,22 +7,16 @@ import '../../view/login_view.dart';
 import '../shared_preferences.dart';
 
 class AppRoutes {
-  static final rutaInicial = Preferencias.logeado
-          ? 'home'
-          : 'login';
+  static final String initialRoute =  Preferencias.logeado ? 'home' : 'login';
 
-  static final menuOpciones = <MenuOpcion>[
-    MenuOpcion(ruta: 'home', vista: const HomeView()),
-    MenuOpcion(ruta: 'login', vista: const LoginView()),
-    MenuOpcion(ruta: 'banner', vista: const BannerView())
-  ];
+  static final Map<String, Widget Function(BuildContext)> _routes = {
+    banner: (_) => const BannerView(),
+    login: (_) => const LoginView(),
+    home: (_) => const HomeView()
+  };
 
-  static Map<String, Widget Function(BuildContext)> getAppRutas() {
-    Map<String, Widget Function(BuildContext)> appRutas = {};
-
-    for (var opcion in menuOpciones) {
-      appRutas.addAll({opcion.ruta: (BuildContext context) => opcion.vista});
-    }
-    return appRutas;
-  }
+  static get routes => _routes;
+  static String get login => 'login';
+  static String get home => 'home';
+  static String get banner => 'banner';
 }

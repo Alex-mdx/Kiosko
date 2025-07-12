@@ -40,18 +40,17 @@ class _ProductoWidgetState extends State<ProductoWidget> {
                             child: Container(
                                 color: LightThemeColors.darkBlue,
                                 child: RiveAnimatedIcon(
-                                    onTap: () async => await Dialogs.showMorph(
-                                        title: "Descargar productos",
-                                        description:
-                                            "Se va a descargar el catalogo de productos para el kiosko",
-                                        loadingTitle: "Descargando",
-                                        onAcceptPressed: (context) async {
-                                          await ProductosController
-                                              .getApiProductos(provider);
-                                          setState(() {
-                                            Navigation.pop();
+                                    onTap: () async {
+                                      await Dialogs.showMorph(
+                                          title: "Descargar productos",
+                                          description:
+                                              "Se va a descargar el catalogo de productos para el kiosko",
+                                          loadingTitle: "Descargando",
+                                          onAcceptPressed: (context) async {
+                                            await ProductosController
+                                                .getApiProductos(provider);
                                           });
-                                        }),
+                                    },
                                     riveIcon: RiveIcon.refresh,
                                     width: 12.w,
                                     height: 12.w,

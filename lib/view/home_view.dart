@@ -159,7 +159,8 @@ class _HomeViewState extends State<HomeViewOpen> {
                                   : LightThemeColors.background),
                           Padding(
                               padding: EdgeInsets.only(top: .5.h),
-                              child: Text("#{widget.provider.listaDetalle.length}",
+                              child: Text(
+                                  "#{widget.provider.listaDetalle.length}",
                                   style: TextStyle(
                                       fontSize: 13.sp,
                                       fontWeight: FontWeight.bold)))
@@ -195,7 +196,7 @@ class _HomeViewState extends State<HomeViewOpen> {
                           WidgetStatePropertyAll(LightThemeColors.red)),
                   onPressed: () async {
                     widget.provider.listaDetalle.clear();
-                    await Navigation.pushReplacementNamed(routeName: 'banner');
+                    await Navigation.pushNamed(route: 'banner');
                   },
                   child: Text("Cancelar",
                       style: TextStyle(
@@ -208,7 +209,7 @@ class _HomeViewState extends State<HomeViewOpen> {
                     onPressed: () async {
                       if (widget.provider.selectDevice != null) {
                         if (widget.provider.pointNow != null) {
-                          if (widget.provider.listaDetalle.isNotEmpty) {
+                          /* if (widget.provider.listaDetalle.isNotEmpty) {
                             MPagoIntentModel? intent;
                             await Dialogs.showMorph(
                                 title: "Efectuar venta",
@@ -237,7 +238,7 @@ class _HomeViewState extends State<HomeViewOpen> {
                             }
                           } else {
                             showToast("No ha ingresado ningun producto");
-                          }
+                          } */
                         } else {
                           showToast("No hay ninguna terminal conectada");
                         }

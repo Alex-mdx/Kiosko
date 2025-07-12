@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import 'navigation_key.dart';
+import 'navigation_service.dart';
 import 's_dialog_morph.dart';
 
 typedef OnAcceptPressedCallback = Future Function(BuildContext context);
@@ -38,7 +39,7 @@ class Dialogs {
                     isLocked = false;
                     await onAcceptPressed.call(context);
                     isLocked = true;
-                    
+                    Navigation.pop();
                   },
                   cancelText:
                       Text(cancelText, style: const TextStyle(fontSize: 18)),
@@ -52,6 +53,7 @@ class Dialogs {
 
   static Future<dynamic> showCustomDialog(Widget dialog) {
     return showDialog(
+        barrierDismissible: false,
         context: navigatorKey.currentState!.context,
         builder: (_) {
           return dialog;

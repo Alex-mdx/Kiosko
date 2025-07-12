@@ -119,8 +119,7 @@ class _LoginViewState extends State<LoginView> {
                 }
                 if (iniciaSesion == 'success') {
                   Preferencias.logeado = true;
-                  await Navigation.pushNamedAndRemoveUntil(
-                      routeName: 'home', predicate: (route) => false);
+                  await Navigation.pushReplacementNamed(routeName: 'home');
                 }
                 setState(() {});
               } else {

@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:kiosko/controllers/MPago_point_controller.dart';
+import 'package:kiosko/controllers/empresa_controller.dart';
+import 'package:kiosko/controllers/forma_pago_controller.dart';
+import 'package:kiosko/controllers/sucursal_controller.dart';
 import 'package:kiosko/controllers/user_controller.dart';
 import 'package:kiosko/models/MPago_point_model.dart';
 import 'package:kiosko/models/direccion_model.dart';
@@ -94,5 +97,8 @@ class MainProvider with ChangeNotifier {
   Future<void> logeo() async {
     user = await UserController.getItem();
     pointNow = await MpagoPointController.getItem();
+    empresas = await EmpresaController.getItems();
+    sucursales = await SucursalController.getItems();
+    formaPago = await FormaPagoController.getItems();
   }
 }
