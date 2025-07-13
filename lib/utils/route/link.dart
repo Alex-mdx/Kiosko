@@ -17,6 +17,12 @@ class Link {
   static String apiUrlProducto =
       "$apiSoferp/app/productos/impuestos?database_id=";
   static String apiUrlPrecios = "$apiSoferp/app/listas_precio";
+  static String apiGrupoFamilia = "$apiSoferp/app/grupos_familia?database_id=";
+
+  static String apiCorte = "$apiSoferp/app/ventas/sincronizar";
+  static String apiPin = "$apiSoferp/app/autorizaciones/pin";
+  static String apiVentaEliminar = "$apiSoferp/app/ventas";
+  static String apiUrlContacto = '$apiSoferp/app/contactos?database_id=';
 }
 
 class Servidor {

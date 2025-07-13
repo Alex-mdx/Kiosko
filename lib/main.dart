@@ -23,10 +23,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = PostHttpOverrides();
   await Preferencias.init();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitDown,
-    DeviceOrientation.portraitUp,
-  ]).then((_) {
+  await SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]).then((_) {
     runApp(MultiProvider(
         providers: [ChangeNotifierProvider(create: (_) => MainProvider())],
         child: const POS()));
@@ -42,7 +40,8 @@ class POS extends StatelessWidget {
           dismissOtherOnShow: true,
           textStyle: TextStyle(fontSize: 14.sp, color: LightThemeColors.grey),
           duration: const Duration(seconds: 4),
-          child: MaterialApp(localizationsDelegates: const [
+          child: MaterialApp(
+              localizationsDelegates: const [
                 GlobalMaterialLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate

@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:get/utils.dart';
+import 'package:kiosko/models/MPago_intent_model.dart';
+import 'package:kiosko/models/venta_pago_model.dart';
 import 'package:kiosko/theme/app_colors.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:kiosko/utils/services/navigation_service.dart';
 import 'package:kiosko/utils/textos.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
+import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:sizer/sizer.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+
+import '../utils/generador_compras.dart';
+import '../utils/print_final.dart';
+import '../utils/services/dialog_services.dart';
+import '../utils/services/impresora_configuracion.dart';
+import '../utils/services/mercadopago.dart';
+import 's_dialog_MPago_state.dart';
 
 class SDialogProductos extends StatefulWidget {
   const SDialogProductos({super.key});
@@ -22,17 +33,10 @@ class _SDialogProductosState extends State<SDialogProductos> {
     return Dialog(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
       AppBar(
-          title: Text("Lista de productos seleccionados",
+          title: Text("Carrito de compras",
               maxLines: 2,
               textAlign: TextAlign.start,
-              style: TextStyle(fontSize: 16.sp)),
-          actions: [
-            Text("\$${Textos.moneda(moneda: provider.totalSumatoria())}",
-                style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: LightThemeColors.grey))
-          ]),
+              style: TextStyle(fontSize: 16.sp))),
       Padding(
           padding: EdgeInsets.all(8.sp),
           child: Column(children: [
@@ -62,7 +66,7 @@ class _SDialogProductosState extends State<SDialogProductos> {
                               fontSize: 14.sp, fontWeight: FontWeight.bold)))
                 ])),
             Container(
-                constraints: BoxConstraints(maxHeight: 75.h),
+                constraints: BoxConstraints(maxHeight: 50.h),
                 child: ListView.builder(
                     shrinkWrap: true,
                     itemCount: provider.listaDetalle.length,
@@ -102,8 +106,9 @@ class _SDialogProductosState extends State<SDialogProductos> {
                                         Expanded(
                                             flex: 4,
                                             child: Text(
-                                                provider
-                                                    .listaDetalle[index].concepto ?? "Sin nombre",
+                                                provider.listaDetalle[index]
+                                                        .concepto ??
+                                                    "Sin nombre",
                                                 textAlign: TextAlign.start,
                                                 maxLines: 3,
                                                 overflow: TextOverflow.ellipsis,
@@ -111,9 +116,8 @@ class _SDialogProductosState extends State<SDialogProductos> {
                                                     fontSize: 14.sp))),
                                         Expanded(
                                             flex: 1,
-                                            child: Text( "${provider
-                                                        .listaDetalle[index]
-                                                        .cantidad}",
+                                            child: Text(
+                                                "${provider.listaDetalle[index].cantidad}",
                                                 textAlign: TextAlign.end,
                                                 style: TextStyle(
                                                     fontSize: 14.sp))),
@@ -127,7 +131,81 @@ class _SDialogProductosState extends State<SDialogProductos> {
                                       ])),
                                   Icon(Icons.keyboard_double_arrow_left,
                                       size: 16.sp, color: LightThemeColors.red)
-                                ])))))
+                                ]))))),
+            Divider(),
+            Text(
+                "Total a pagar: \$${Textos.moneda(moneda: provider.totalSumatoria())}",
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+            TextButton(
+                onPressed: () {},
+                child: Text(
+                    "Metodo de pago: ${provider.formaPago.firstWhereOrNull((element) => element.defecto == 1)?.nombre}",
+                    style: TextStyle(
+                        fontSize: 16.sp, fontWeight: FontWeight.bold))),
+            ElevatedButton.icon(
+                icon: RiveAnimatedIcon(
+                    riveIcon: RiveIcon.like,
+                    width: 8.w,
+                    height: 8.w,
+                    color: Colors.green,
+                    strokeWidth: 22.w,
+                    loopAnimation: true),
+                onPressed: () async {
+                  MPagoIntentModel? intent;
+                  var pagoTemp = provider.formaPago
+                      .firstWhereOrNull((element) => element.defecto == 1);
+
+                  var pago = PagoModel(
+                      id: pagoTemp?.id,
+                      nombre: pagoTemp?.nombre,
+                      databaseId: pagoTemp?.databaseId,
+                      factorComision: pagoTemp?.factorComision,
+                      codigoSat: pagoTemp?.codigoSat,
+                      cuentaContable: pagoTemp?.cuentaContable,
+                      metodoPago: pagoTemp?.metodoPago,
+                      formaPago: pagoTemp?.formaPago,
+                      moneda: pagoTemp?.moneda,
+                      permitirCambio: pagoTemp?.permitirCambio,
+                      importe: provider.totalSumatoria().toStringAsFixed(4),
+                      referencia: null,
+                      cambio: 0,
+                      tipoCambio:
+                          double.tryParse(pagoTemp?.tipoCambioDefault ?? "1"),
+                      press: 0,
+                      cuentaBancariaId: pagoTemp?.cuentaBancariaId,
+                      formaPagoId: pagoTemp?.id);
+                  await Dialogs.showMorph(
+                      title: "Efectuar venta",
+                      description:
+                          "¿Desea que se le cobre por estos productos que ha ingresado con el monto de \$${Textos.moneda(moneda: provider.totalSumatoria())}?",
+                      loadingTitle: "Enviando Intencion",
+                      onAcceptPressed: (context) async {
+                        var venta =
+                            await GeneradorCompras.pagar(provider, pago);
+                        await PrintFinal.ventaBoletaje(
+                            provider: provider,
+                            type: provider.selectDevice!,
+                            venta: venta);
+                        provider.listaDetalle.clear();
+                        /* var result = await ImpresoraConnect.verificar(
+                            provider.selectDevice);
+                        if (result != null) {
+                          intent = await Mercadopago.sendIntencion(
+                              provider.pointNow!.id, provider.totalSumatoria());
+                        } else {
+                          showToast("No hay ninguna impresora conectada");
+                        } */
+                      });
+                  /* if (intent != null) {
+                    await showDialog(
+                        context: context,
+                        builder: (context) => SDialogMpagoState(
+                            intencion: intent!, provider: provider));
+                  } */
+                },
+                label: Text("Confirmar compra",
+                    style: TextStyle(
+                        fontSize: 16.sp, fontWeight: FontWeight.bold)))
           ]))
     ]));
   }

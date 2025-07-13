@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/rendering.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:oktoast/oktoast.dart';
-import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
+import 'package:thermal_printer_plus/thermal_printer.dart';
 
 import '../../controllers/printer_controller.dart';
 import '../../models/device_model.dart';
@@ -25,56 +25,58 @@ class ImpresoraConnect {
   ///
   static Future<void> conectAuto(MainProvider provider) async {
     final device = await PrinterController.getItems();
-    await PrintBluetoothThermal.disconnect;
     log('almacen: ${device.map((e) => "${e.name} - ${e.connectionTypes}").toList()}');
     bool result = false;
     for (var element in device) {
-      PrinterModel newDevice = PrinterModel(
-          name: element.name!,
-          address: element.address,
-          connectionTypes: element.connectionTypes,
-          isConnected: element.isConnected,
-          productId: element.productId,
-          vendorId: element.vendorId);
-      log("${newDevice.toJson()}");
-      result = await PrintBluetoothThermal.connect(
-          macPrinterAddress: newDevice.address ?? "");
+      result = await conectar(element);
 
-      Future.delayed(Duration(milliseconds: 500), () {
+      debugPrint("$result");
+      provider.devices.add(element);
+      if (result) {
         debugPrint("$result");
-        provider.devices.add(element);
-        if (result) {
-          debugPrint("$result");
-          provider.selectDevice = element;
-          log('Conexion establecida\n${provider.selectDevice!.toJson()}');
-          showToast('Conexion Establecida');
-        }
-        debugPrint("$result");
-      });
+        provider.selectDevice = element;
+        log('Conexion establecida\n${provider.selectDevice!.toJson()}');
+        showToast('Conexion Establecida');
+        await PrinterManager.instance
+            .disconnect(type: element.connectionTypes!);
+      }
+      debugPrint("$result");
     }
   }
 
-  static Future<PrinterModel?> verificar(PrinterModel? actual) async {
+  static Future<bool> conectar(PrinterModel printer,
+      {bool reconnect = false, bool isBle = false, String? ipAddress}) async {
     bool result = false;
-    PrinterModel? device = actual;
-    if (actual != null) {
-      log("${actual.toJson()}");
-      await PrintBluetoothThermal.disconnect;
-      try {
-        showToast("Estableciendo conexion con la impresora");
-        result = await PrintBluetoothThermal.connect(
-            macPrinterAddress: actual.address ?? "");
-
-        if (!result) {
-          showToast(
-              "No se pudo establecer conexion con la impresora\n${actual.connectionTypes}");
-        }
-      } catch (e) {
-        log("$e");
-      }
+    switch (printer.connectionTypes!) {
+      // only windows and android
+      case PrinterType.usb:
+        result = await PrinterManager.instance.connect(
+            type: printer.connectionTypes!,
+            model: UsbPrinterInput(
+                name: printer.name,
+                productId: printer.productId,
+                vendorId: printer.vendorId));
+        break;
+      // only iOS and android
+      case PrinterType.bluetooth:
+        result = await PrinterManager.instance.connect(
+            type: printer.connectionTypes!,
+            model: BluetoothPrinterInput(
+                name: printer.name,
+                address: printer.address!,
+                isBle: isBle,
+                autoConnect: reconnect));
+        break;
+      case PrinterType.network:
+        result = await PrinterManager.instance.connect(
+            type: printer.connectionTypes!,
+            model: TcpPrinterInput(ipAddress: ipAddress ?? printer.address!));
+        break;
     }
-
-    return result ? device : null;
+    if (!result) {
+      showToast("No se pudo conectar a la impresora");
+    }
+    return result;
   }
 
   /* static Future<bool> connectDevice(

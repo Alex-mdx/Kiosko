@@ -121,7 +121,9 @@ class _LoginViewState extends State<LoginView> {
                   Preferencias.logeado = true;
                   await Navigation.pushReplacementNamed(routeName: 'home');
                 }
-                setState(() {});
+                setState(() {
+                  iniciaSesion;
+                });
               } else {
                 showToast("Operacion en proceso");
               }

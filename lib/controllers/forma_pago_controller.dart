@@ -31,7 +31,8 @@ class FormaPagoController {
           permitir_cambio INTEGER,
           cuenta_bancaria_id INTEGER,
           credito INTEGER,
-          razon_social_id INTEGER
+          razon_social_id INTEGER,
+          defecto INTEGER
       )""");
   }
 
@@ -72,8 +73,9 @@ class FormaPagoController {
 
     final db = await database();
     await db.delete('formaPago');
-
+    var contador = 0;
     for (var data in jsonBody) {
+      contador++;
       if (Parser.toInt(data['mostrar_pv']) == 1) {
         getprecios.add(FormaPagoModel(
             id: data['id'],
@@ -93,7 +95,7 @@ class FormaPagoController {
             permitirCambio: Parser.toInt(data['permitir_cambio']),
             credito: Parser.toInt(data['credito']),
             cuentaBancariaId: data['cuenta_bancaria_id'],
-            razonSocialId: data['razon_social_id']));
+            razonSocialId: data['razon_social_id'],defecto: contador  == 1 ? 1:0));
       }
     }
     for (var element in getprecios) {

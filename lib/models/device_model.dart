@@ -1,4 +1,5 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
+import 'package:thermal_printer_plus/thermal_printer.dart';
 
 class PrinterModel {
   String? address;
@@ -9,7 +10,7 @@ class PrinterModel {
   PaperSize? paper;
   String? manufacturer;
   String? serialNumber;
-  String? connectionTypes;
+  PrinterType? connectionTypes;
 
   PrinterModel(
       {required this.name,
@@ -31,8 +32,7 @@ class PrinterModel {
           PaperSize? paper,
           String? manufacturer,
           String? serialNumber,
-          String? connectionTypes,
-          String? direccion}) =>
+          PrinterType? connectionTypes}) =>
       PrinterModel(
           name: name ?? this.name,
           address: address ?? this.address,
@@ -57,7 +57,11 @@ class PrinterModel {
               : PaperSize.mm58,
       manufacturer: json["manufacturer"].toString(),
       serialNumber: json["serial_number"].toString(),
-      connectionTypes: json["connection_types"]);
+      connectionTypes: json["connection_types"] == "BLUETOOTH"
+          ? PrinterType.bluetooth
+          : json["connection_types"] == "USB"
+              ? PrinterType.usb
+              : PrinterType.network);
 
   Map<String, dynamic> toJson() => {
         "name": name,
@@ -72,6 +76,10 @@ class PrinterModel {
                 : "58",
         "manufacturer": manufacturer,
         "serial_number": serialNumber,
-        "connection_types": connectionTypes
+        "connection_types": connectionTypes == PrinterType.bluetooth
+            ? "BLUETOOTH"
+            : connectionTypes == PrinterType.usb
+                ? "USB"
+                : "NETWORK"
       };
 }

@@ -11,7 +11,7 @@ import '../utils/funcion_parser.dart';
 import '../utils/route/link.dart';
 //Models
 
-class SQLHelperCategorias {
+class CategoriaController {
   static Future<void> createTables(sql.Database database) async {
     await database.execute("""CREATE TABLE categoria(
           id INTEGER,

@@ -44,7 +44,8 @@ class Mercadopago {
     try {
       var mp = MP(clienteId, clienteSecret);
       var response = await mp.delete(
-          "/point/integration-api/devices/$deviceId/payment-intents/$idIntent");
+          "/point/integration-api/devices/$deviceId/payment-intents/$idIntent",
+          params: {"status": "CANCELLED"});
       if (response['status'] == 200 || response['status'] == 201) {
         log("${response["response"]}");
         return MPagoIntentModel.fromJson(response["response"]);

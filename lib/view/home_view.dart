@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:kiosko/dialog/s_dialog_MPago_state.dart';
-import 'package:kiosko/dialog/s_dialog_body_usb.dart';
-import 'package:kiosko/dialog/s_dialog_mp_point.dart';
 import 'package:kiosko/dialog/s_dialog_productos.dart';
 import 'package:kiosko/theme/app_colors.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:kiosko/utils/services/impresora_configuracion.dart';
-import 'package:kiosko/utils/services/mercadopago.dart';
 import 'package:kiosko/utils/services/navigation_service.dart';
-import 'package:kiosko/utils/textos.dart';
 import 'package:kiosko/view/widgets/producto_widget.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
+import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:sizer/sizer.dart';
-
-import '../models/MPago_intent_model.dart';
-import '../utils/services/dialog_services.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -134,6 +128,20 @@ class _HomeViewState extends State<HomeViewOpen> {
     super.initState();
     ImpresoraConnect.conectAuto(widget.provider);
     widget.provider.logeo();
+    internet();
+  }
+
+  Future<void> internet() async {
+    InternetConnectionCheckerPlus().onStatusChange.listen((status) {
+      switch (status) {
+        case InternetConnectionStatus.connected:
+          widget.provider.internet = true;
+          break;
+        case InternetConnectionStatus.disconnected:
+          widget.provider.internet = false;
+          break;
+      }
+    });
   }
 
   @override
@@ -143,48 +151,19 @@ class _HomeViewState extends State<HomeViewOpen> {
         child: Scaffold(
             appBar: AppBar(
                 title: Text("Seleccione sus productos",
-                    style: TextStyle(fontSize: 16.sp)),
+                    maxLines: 2, style: TextStyle(fontSize: 16.sp)),
                 actions: [
                   OverflowBar(children: [
-                    IconButton(
-                        onPressed: () => showDialog(
-                                context: context,
-                                builder: (context) => SDialogProductos())
-                            .whenComplete(() => setState(() {})),
-                        icon: Stack(alignment: Alignment.topCenter, children: [
-                          Icon(Icons.shopping_cart_rounded,
-                              size: 24.sp,
-                              color: widget.provider.listaDetalle.isEmpty
-                                  ? LightThemeColors.darkBlue
-                                  : LightThemeColors.background),
-                          Padding(
-                              padding: EdgeInsets.only(top: .5.h),
-                              child: Text(
-                                  "#{widget.provider.listaDetalle.length}",
-                                  style: TextStyle(
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.bold)))
-                        ])),
-                    IconButton.filled(
-                        iconSize: 18.sp,
-                        onPressed: () => showDialog(
-                            context: context,
-                            builder: (context) =>
-                                Dialog(child: DialogImpresora())),
-                        icon: Icon(
-                            widget.provider.selectDevice == null
-                                ? Icons.print_disabled
-                                : Icons.print,
-                            color: LightThemeColors.background)),
-                    ElevatedButton(
-                        onPressed: () => showDialog(
-                            context: context,
-                            builder: (context) => SDialogMpPoint()),
-                        child: Icon(Icons.point_of_sale,
-                            size: 20.sp,
-                            color: widget.provider.pointNow == null
-                                ? LightThemeColors.darkGrey
-                                : LightThemeColors.green))
+                    RiveAnimatedIcon(
+                        riveIcon: RiveIcon.settings,
+                        width: 12.w,
+                        height: 12.w,
+                        color: LightThemeColors.primary,
+                        strokeWidth: 4.w,
+                        loopAnimation: true,
+                        onTap: () async {
+                          await Navigation.pushNamed(route: "setting");
+                        })
                   ])
                 ]),
             body: ProductoWidget(),
@@ -201,54 +180,30 @@ class _HomeViewState extends State<HomeViewOpen> {
                   child: Text("Cancelar",
                       style: TextStyle(
                           fontSize: 14.sp, color: LightThemeColors.grey))),
-              if (widget.provider.listaDetalle.isNotEmpty)
-                ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor:
-                            WidgetStatePropertyAll(LightThemeColors.primary)),
-                    onPressed: () async {
-                      if (widget.provider.selectDevice != null) {
-                        if (widget.provider.pointNow != null) {
-                          /* if (widget.provider.listaDetalle.isNotEmpty) {
-                            MPagoIntentModel? intent;
-                            await Dialogs.showMorph(
-                                title: "Efectuar venta",
-                                description:
-                                    "¿Desea que se le cobre por estos productos que ha ingresado con el monto de \$${Textos.moneda(moneda: widget.provider.totalSumatoria())}?",
-                                loadingTitle: "Enviando Intencion",
-                                onAcceptPressed: (context) async {
-                                  var result = await ImpresoraConnect.verificar(
-                                      widget.provider.selectDevice);
-                                  if (result != null) {
-                                    intent = await Mercadopago.sendIntencion(
-                                        widget.provider.pointNow!.id,
-                                        widget.provider.totalSumatoria());
-                                  } else {
-                                    showToast(
-                                        "No hay ninguna impresora conectada");
-                                  }
-                                  Navigation.pop();
-                                });
-                            if (intent != null) {
-                              await showDialog(
-                                  context: context,
-                                  builder: (context) => SDialogMpagoState(
-                                      intencion: intent!,
-                                      provider: widget.provider));
-                            }
-                          } else {
-                            showToast("No ha ingresado ningun producto");
-                          } */
+              ElevatedButton(
+                  style: ButtonStyle(
+                      backgroundColor:
+                          WidgetStatePropertyAll(LightThemeColors.primary)),
+                  onPressed: () async {
+                    if (widget.provider.selectDevice != null) {
+                      if (widget.provider.pointNow != null) {
+                        if (widget.provider.listaDetalle.isNotEmpty) {
+                          await showDialog(
+                              context: context,
+                              builder: (context) => SDialogProductos());
                         } else {
-                          showToast("No hay ninguna terminal conectada");
+                          showToast("No ha ingresado ningun producto");
                         }
                       } else {
-                        showToast("Conecte una impresora");
+                        showToast("No hay ninguna terminal conectada");
                       }
-                    },
-                    child: Text("Pagar",
-                        style: TextStyle(
-                            fontSize: 14.sp, color: LightThemeColors.grey)))
+                    } else {
+                      showToast("Conecte una impresora");
+                    }
+                  },
+                  child: Text("Pagar",
+                      style: TextStyle(
+                          fontSize: 14.sp, color: LightThemeColors.grey)))
             ]),
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.centerDocked));

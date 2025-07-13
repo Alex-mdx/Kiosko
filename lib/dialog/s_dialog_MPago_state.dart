@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:kiosko/models/MPago_intent_model.dart';
 import 'package:kiosko/models/MPago_payment_model.dart';
 import 'package:kiosko/models/Mpago_pay_intent_model.dart';
+import 'package:kiosko/models/venta_pago_model.dart';
 import 'package:kiosko/theme/app_colors.dart';
+import 'package:kiosko/utils/generador_compras.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:kiosko/utils/services/mercadopago.dart';
 import 'package:kiosko/utils/services/navigation_service.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:sizer/sizer.dart';
 import 'package:translator/translator.dart';
 
@@ -16,8 +19,9 @@ import '../utils/print_final.dart';
 class SDialogMpagoState extends StatefulWidget {
   final MainProvider provider;
   final MPagoIntentModel intencion;
+  final PagoModel pago;
   const SDialogMpagoState(
-      {super.key, required this.intencion, required this.provider});
+      {super.key, required this.intencion, required this.provider, required this.pago});
 
   @override
   State<SDialogMpagoState> createState() => _SDialogMpagoStateState();
@@ -29,6 +33,9 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
   MPagoPaymentModel? pago;
   bool pagoBool = false;
   Timer? _timer;
+  int finalizar = 0;
+
+  ///cuando llegue a 5 se cancela de manera automatica
   String estado = "";
   String descripcion = "";
 
@@ -46,7 +53,9 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
   }
 
   void _startPeriodicTask() {
-    _timer = Timer.periodic(Duration(seconds: 4), (Timer timer) async {
+    _timer = Timer.periodic(Duration(seconds: 3), (Timer timer) async {
+      finalizar++;
+
       if (intencionPago?.state != "FINISHED" &&
           intencionPago?.state != "CANCELED") {
         var intencion =
@@ -54,6 +63,13 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
         setState(() {
           intencionPago = intencion;
         });
+        if (finalizar == 7 &&
+            Mercadopago.string(state: intencionPago?.state ?? "") ==
+                "En espera") {
+          showToast("Se ha excedido el tiempo de espera\nCancelando intencion");
+          await Mercadopago.cancelarIntencion(
+              widget.provider.pointNow!.id, widget.intencion.id);
+        }
       } else {
         if (intencionPago?.state == "FINISHED") {
           var payment =
@@ -69,9 +85,8 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
             pagoBool = true;
           });
           if (pago?.status == "approved") {
-            await PrintFinal.ticketCompra(
-                print: widget.provider.selectDevice,
-                carrito: widget.provider.listaDetalle);
+            var venta = await GeneradorCompras.pagar(widget.provider, widget.pago);
+            await PrintFinal.ventaBoletaje(provider: widget.provider,type: widget.provider.selectDevice!,venta: venta);
             widget.provider.listaDetalle.clear();
           }
           _timer?.cancel();
@@ -108,7 +123,7 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
                                         fontSize: 15.sp,
                                         fontWeight: FontWeight.bold)),
                                 pagoBool
-                                    ? Text("$estado\n $descripcion",
+                                    ? Text("$estado\n$descripcion",
                                         textAlign: TextAlign.center,
                                         style: TextStyle(fontSize: 15.sp))
                                     : CircularProgressIndicator()
@@ -119,7 +134,8 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
                         Text(
                             "Ingrese su tarjeta en la terminal correspondiente",
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 15.sp)),
+                            style: TextStyle(
+                                fontSize: 16.sp, fontWeight: FontWeight.bold)),
                         CircularProgressIndicator()
                       ])
                   ])

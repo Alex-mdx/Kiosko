@@ -1,7 +1,8 @@
 import 'dart:developer';
-
+import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart' as sql;
+import 'package:thermal_printer_plus/thermal_printer.dart';
 
 import '../models/device_model.dart';
 
@@ -16,7 +17,10 @@ class PrinterController {
         product_id TEXT,
         paper TEXT,
         connection_types TEXT,
-        is_connected INTEGER
+        is_connected INTEGER,
+        manufacturer INTEGER,
+        serial_number INTEGER,
+        usb_device INTEGER
       )""");
   }
 
@@ -51,9 +55,29 @@ class PrinterController {
     await existColumna("serial_number");
     await existColumna("usb_device");
     log('${dispositivo.toJson()}');
-    log('$data');
     if (data.isEmpty) {
-      await db.insert(nombreDb, dispositivo.toJson(),
+      await db.insert(
+          nombreDb,
+          {
+            "name": dispositivo.name,
+            "address": dispositivo.address,
+            "is_connected": dispositivo.isConnected,
+            "vendor_id": dispositivo.vendorId,
+            "product_id": dispositivo.productId,
+            "paper": dispositivo.paper == PaperSize.mm80
+                ? "80"
+                : dispositivo.paper == PaperSize.mm72
+                    ? "72"
+                    : "58",
+            "manufacturer": dispositivo.manufacturer,
+            "serial_number": dispositivo.serialNumber,
+            "connection_types":
+                dispositivo.connectionTypes == PrinterType.bluetooth
+                    ? "BLUETOOTH"
+                    : dispositivo.connectionTypes == PrinterType.usb
+                        ? "USB"
+                        : "NETWORK"
+          },
           conflictAlgorithm: sql.ConflictAlgorithm.rollback);
       debugPrint('inserto');
     } else {
@@ -88,9 +112,37 @@ class PrinterController {
 
   static Future<void> update(PrinterModel dispositivo) async {
     final db = await database();
-    await db.update(nombreDb, dispositivo.toJson(),
+    await db.update(
+        nombreDb,
+        {
+          "name": dispositivo.name,
+          "address": dispositivo.address,
+          "is_connected": dispositivo.isConnected,
+          "vendor_id": dispositivo.vendorId,
+          "product_id": dispositivo.productId,
+          "paper": dispositivo.paper == PaperSize.mm80
+              ? "80"
+              : dispositivo.paper == PaperSize.mm72
+                  ? "72"
+                  : "58",
+          "manufacturer": dispositivo.manufacturer,
+          "serial_number": dispositivo.serialNumber,
+          "connection_types":
+              dispositivo.connectionTypes == PrinterType.bluetooth
+                  ? "BLUETOOTH"
+                  : dispositivo.connectionTypes == PrinterType.usb
+                      ? "USB"
+                      : "NETWORK"
+        },
         where: 'name = ? AND connection_types = ?',
-        whereArgs: [dispositivo.name, dispositivo.connectionTypes],
+        whereArgs: [
+          dispositivo.name,
+          dispositivo.connectionTypes == PrinterType.bluetooth
+              ? "BLUETOOTH"
+              : dispositivo.connectionTypes == PrinterType.usb
+                  ? "USB"
+                  : "NETWORK"
+        ],
         conflictAlgorithm: sql.ConflictAlgorithm.rollback);
   }
 
@@ -103,6 +155,13 @@ class PrinterController {
     final db = await database();
     await db.delete(nombreDb,
         where: 'name = ? AND connection_types = ?',
-        whereArgs: [device.name, device.connectionTypes]);
+        whereArgs: [
+          device.name,
+          device.connectionTypes == PrinterType.bluetooth
+              ? "BLUETOOTH"
+              : device.connectionTypes == PrinterType.usb
+                  ? "USB"
+                  : "NETWORK"
+        ]);
   }
 }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:kiosko/controllers/producto_controller.dart';
 import 'package:kiosko/theme/app_colors.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:kiosko/utils/services/dialog_services.dart';
-import 'package:kiosko/utils/services/navigation_service.dart';
 import 'package:kiosko/view/widgets/card_producto_widget.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:sizer/sizer.dart';
@@ -49,6 +50,7 @@ class _ProductoWidgetState extends State<ProductoWidget> {
                                           onAcceptPressed: (context) async {
                                             await ProductosController
                                                 .getApiProductos(provider);
+                                            setState(() {});
                                           });
                                     },
                                     riveIcon: RiveIcon.refresh,
@@ -60,8 +62,12 @@ class _ProductoWidgetState extends State<ProductoWidget> {
                       ]))
                 : LiquidPullToRefresh(
                     springAnimationDurationInMilliseconds: 500,
-                    onRefresh: () async =>
-                        await ProductosController.getApiProductos(provider),
+                    onRefresh: () async {
+                      
+                      await ProductosController.getApiProductos(provider);
+                      setState(() {});
+                      showToast("Productos actualizados");
+                    },
                     child: Scrollbar(
                         child: GridView.builder(
                             gridDelegate:
@@ -87,10 +93,10 @@ class _ProductoWidgetState extends State<ProductoWidget> {
                       style: TextStyle(fontSize: 16.sp)),
                   RiveAnimatedIcon(
                       riveIcon: RiveIcon.warning,
-                      width: 50,
-                      height: 50,
+                      width: 18.w,
+                      height: 18.w,
                       color: Colors.red,
-                      strokeWidth: 3,
+                      strokeWidth: 3.w,
                       loopAnimation: true)
                 ]));
           } else {
