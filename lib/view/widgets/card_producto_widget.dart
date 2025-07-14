@@ -5,6 +5,7 @@ import 'package:kiosko/models/producto_model.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:zo_collection_animation/zo_collection_animation.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/funcion_parser.dart';
 import '../../utils/generador_compras.dart';
@@ -12,7 +13,13 @@ import '../../utils/textos.dart';
 
 class CardProductoWidget extends StatefulWidget {
   final ProductoModel producto;
-  const CardProductoWidget({super.key, required this.producto});
+  final GlobalKey keyAnima;
+  final Function fun;
+  const CardProductoWidget(
+      {super.key,
+      required this.producto,
+      required this.keyAnima,
+      required this.fun});
 
   @override
   State<CardProductoWidget> createState() => CardProductoWidgetState();
@@ -22,12 +29,23 @@ class CardProductoWidgetState extends State<CardProductoWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MainProvider>(context);
-    return InkWell(
-        hoverColor: LightThemeColors.background,
-        onTap: () async {
+    return ZoCollectionSource(
+        destinationKey: widget.keyAnima,
+        count: 1,
+        animationDuration: Duration(seconds: 1),
+        collectionWidget: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                color: LightThemeColors.primary),
+            child: Padding(
+                padding: EdgeInsets.all(4.sp),
+                child: Icon(Icons.add_shopping_cart,
+                    size: 18.sp, color: LightThemeColors.green))),
+        onAnimationComplete: () async {
           await Haptics.vibrate(HapticsType.medium);
           await GeneradorCompras.agregarCarrito(
               provider, widget.producto, null, [], "", []);
+          widget.fun();
         },
         child: Card(
             child: Column(

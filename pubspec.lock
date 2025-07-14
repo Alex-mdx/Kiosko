@@ -1090,6 +1090,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.3"
+  zo_collection_animation:
+    dependency: "direct main"
+    description:
+      name: zo_collection_animation
+      sha256: "9d7cb3b825c12b390420e7036c0fb97440d7b64c306ebe9876919a302bd51746"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1"
 sdks:
   dart: ">=3.8.0 <4.0.0"
   flutter: ">=3.27.0"

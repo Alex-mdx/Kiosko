@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:kiosko/controllers/user_controller.dart';
 import 'package:kiosko/utils/funcion_parser.dart';
 import 'package:kiosko/utils/route/link.dart';
+import 'package:kiosko/utils/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -123,8 +124,11 @@ class ProductosController {
 
   static Future<void> getApiProductos(MainProvider provider) async {
     final user = await UserController.getItem();
+    String familia = Preferencias.familiaCat == 0
+        ? ""
+        : "&familia_producto_id=${Preferencias.familiaCat}";
     final connJson = Uri.parse(
-        "${Link.apiUrlProducto}${user?.databaseId}&cliente_id=${user?.clienteId}&tipo_precio=1&api_key=${user?.uuid}&punto_venta=true");
+        "${Link.apiUrlProducto}${user?.databaseId}&cliente_id=${user?.clienteId}&tipo_precio=1&api_key=${user?.uuid}&punto_venta=true$familia");
     log("$connJson");
     List<ProductoModel> getLineas = [];
     var response = await http.get(connJson);
@@ -132,7 +136,7 @@ class ProductosController {
     var jsonBody = json.decode(responseBody);
     final db = await database();
     await db.delete('productos');
-    await existColumna("producto_equivalencia");
+
     for (var data in jsonBody) {
       List<ImpuestosModel> impo = [];
       List<AtributosModel> atri = [];
@@ -297,7 +301,7 @@ class ProductosController {
 
   static Future<List<ProductoModel>> getItems() async {
     final db = await database();
-    await existColumna("producto_equivalencia");
+
     List<ProductoModel> model = [];
     final data = await db.query('productos', orderBy: "descripcion");
     for (var element in data) {
@@ -309,7 +313,7 @@ class ProductosController {
   /* static Future<List<ProductoModel>> getByX(
       {required String? peticion, required List<int> categorias}) async {
     final db = await database();
-    await existColumna("producto_equivalencia");
+    
     var idCategoria = categorias.join(",");
     List<ProductoModel> model = [];
     //String querys ="${peticion == null || peticion == "" ? "" : "descripcion LIKE ? OR codigo_barras = $peticion"}${(peticion != null && peticion != "") && (categorias.isNotEmpty) ? "AND" : ""}${categorias.isNotEmpty ? "categoria_id IN ($idCategoria)" : ""}";
@@ -332,7 +336,7 @@ class ProductosController {
   static Future<List<ProductoModel>> getItemServicio() async {
     final db = await database();
     List<ProductoModel> model = [];
-    await existColumna("producto_equivalencia");
+
     final data = (await db.query(nombreDB, where: "tipo_producto = 2"));
     for (var element in data) {
       model.add(ProductoModel.fromJson(element));
@@ -343,7 +347,7 @@ class ProductosController {
 
   static Future<ProductoModel?> getItemId({required int id}) async {
     final db = await database();
-    await existColumna("producto_equivalencia");
+
     final data =
         (await db.query(nombreDB, where: "id = ?", whereArgs: [id], limit: 1))
             .firstOrNull;

@@ -39,6 +39,7 @@ dependencies:
   sqflite: ^2.4.2
   thermal_printer_plus: ^1.0.11
   translator: ^0.1.7
+  zo_collection_animation: ^0.0.1
 
 dev_dependencies:
   flutter_lints: ^5.0.0

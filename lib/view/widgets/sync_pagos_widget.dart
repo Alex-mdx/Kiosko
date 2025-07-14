@@ -75,137 +75,131 @@ class _SyncPanelPagosState extends State<SyncPanelPagos> {
       return transacciones.map((item) {
         return Padding(
             padding: EdgeInsets.symmetric(horizontal: 1.w),
-            child: Column(children: [
-              ElevatedButton.icon(
-                  onPressed: () async {
-                    final ventaDemo = await SQLHelperCortePropio.getItem(
-                        proNavegacion.cortePropio!.transaccion!);
-                    List<VentaModel> ventasTemp = [];
-                    for (var element in ventaDemo) {
-                      ventasTemp.add(element);
-                    }
-                    if (!proNavegacion.estadoSincronizacion) {
-                      try {
-                        await showDialog(
-                            context: context,
-                            builder: (context) => DialogCorte(
-                                ventas: ventasTemp, visualizar: false));
-                      } catch (e) {
-                        showToast("$e");
-                        debugPrint("$e");
-                      }
-                    }
-                  },
-                  icon: Icon(Icons.shopping_cart_checkout, size: 18.sp),
-                  label: Text('Hacer Corte',
-                      style: TextStyle(
-                          fontSize: 12.sp,
-                          color: !proNavegacion.estadoSincronizacion
-                              ? Colors.black
-                              : Colors.grey))),
-              Card(
-                  child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Column(children: [
-                        OverflowBar(children: [
-                          IconButton(
-                              iconSize: 18.sp,
-                              icon: const Icon(Icons.shopping_bag_sharp),
-                              onPressed: () async {
-                                final objCortes =
-                                    (await SQLHelperCortePropio.getItem(item))
-                                        .toList();
-                                if (objCortes.isNotEmpty) {
-                                  await showDialog(
-                                      context: context,
-                                      builder: (context) => DialogCorte(
-                                          ventas: (objCortes.where((element) =>
-                                              element.transaccion!
-                                                  .contains(item))).toList(),
-                                          visualizar: true));
-                                } else {
-                                  showToast(
-                                      'Error al visualizar corte\nNo se ha efectuado ninguna compra');
-                                }
-                              }),
-                          Text('Ventas',
-                              style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold)),
-                          cerrado[transacciones.indexOf(item)] == 1
-                              ? IconButton(
-                                  iconSize: 18.sp,
-                                  onPressed: () async {
-                                    showToast(item);
-                                    final ventaSesion =
-                                        (await SQLHelperCortePropio.getItem(
-                                                item))
-                                            .where((element) =>
-                                                (element.sincronizado == 0) &&
-                                                (element.cerrado == 1))
-                                            .toList();
-                                    try {
-                                      var result =
-                                          await ImpresoraConnect.conectar(
-                                              proNavegacion.selectDevice!);
-                                      if (result) {
-                                        if (ventaSesion.isNotEmpty) {
-                                          var envio =
-                                              await SqlOperaciones.pagoTotal(
-                                                  proNavegacion, item);
-                                          if (envio) {
-                                            await PrintFinal
-                                                .impresionCorteVenta(
-                                                    provider: proNavegacion,
-                                                    corteFin: ventaSesion,
-                                                    tipo: proNavegacion
-                                                        .selectDevice!);
-                                          }
-                                        } else {
-                                          await SQLHelperCortePropio
-                                              .deleteCorte(item);
-                                          proNavegacion.corteinterno =
-                                              await SQLHelperCortePropio
-                                                  .getItems();
-                                          showToast('Venta Sincronizada');
+            child: Card(
+                child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Column(children: [
+                      OverflowBar(children: [
+                        IconButton(
+                            iconSize: 18.sp,
+                            icon: const Icon(Icons.shopping_bag_sharp),
+                            onPressed: () async {
+                              final objCortes =
+                                  (await SQLHelperCortePropio.getItem(item))
+                                      .toList();
+                              if (objCortes.isNotEmpty) {
+                                await showDialog(
+                                    context: context,
+                                    builder: (context) => DialogCorte(
+                                        ventas: (objCortes.where((element) =>
+                                            element.transaccion!
+                                                .contains(item))).toList(),
+                                        visualizar: true));
+                              } else {
+                                showToast(
+                                    'Error al visualizar corte\nNo se ha efectuado ninguna compra');
+                              }
+                            }),
+                        Text('Ventas',
+                            style: TextStyle(
+                                fontSize: 14.sp, fontWeight: FontWeight.bold)),
+                        cerrado[transacciones.indexOf(item)] == 1
+                            ? IconButton(
+                                iconSize: 18.sp,
+                                onPressed: () async {
+                                  showToast(item);
+                                  final ventaSesion =
+                                      (await SQLHelperCortePropio.getItem(item))
+                                          .where((element) =>
+                                              (element.sincronizado == 0) &&
+                                              (element.cerrado == 1))
+                                          .toList();
+                                  try {
+                                    var result =
+                                        await ImpresoraConnect.conectar(
+                                            proNavegacion.selectDevice!);
+                                    if (result) {
+                                      if (ventaSesion.isNotEmpty) {
+                                        var envio =
+                                            await SqlOperaciones.pagoTotal(
+                                                proNavegacion, item);
+                                        if (envio) {
+                                          await PrintFinal.impresionCorteVenta(
+                                              provider: proNavegacion,
+                                              corteFin: ventaSesion,
+                                              tipo:
+                                                  proNavegacion.selectDevice!);
                                         }
                                       } else {
-                                        proNavegacion.selectDevice = null;
-                                        showToast(
-                                            'No se pudo establecer conexion con la impresora',
-                                            dismissOtherToast: true);
+                                        await SQLHelperCortePropio.deleteCorte(
+                                            item);
+                                        proNavegacion.corteinterno =
+                                            await SQLHelperCortePropio
+                                                .getItems();
+                                        showToast('Venta Sincronizada');
                                       }
-                                    } catch (e) {
-                                      showToast('$e');
-                                      debugPrint('$e');
+                                    } else {
+                                      proNavegacion.selectDevice = null;
+                                      showToast(
+                                          'No se pudo establecer conexion con la impresora',
+                                          dismissOtherToast: true);
                                     }
-                                  },
-                                  icon: const Icon(Icons.send))
-                              : IconButton(
-                                  iconSize: 18.sp,
-                                  onPressed: () {
-                                    showToast('Venta en proceso',
-                                        dismissOtherToast: true);
-                                  },
-                                  icon: const Icon(Icons.priority_high_sharp))
-                        ]),
-                        Text(
-                            'Estado: ${cerrado[transacciones.indexOf(item)] == 1 ? 'CERRADO' : 'Pediente'}',
-                            textAlign: TextAlign.center,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(
-                            'Apertura\n${Textos.FechaYMDHMS(fecha: fechaIni[transacciones.indexOf(item)])}',
-                            textAlign: TextAlign.center),
-                        Text(
-                            'Cierre\n${fechaFin[transacciones.indexOf(item)] != null ? Textos.FechaYMDHMS(fecha: fechaFin[transacciones.indexOf(item)]!) : 'En proceso'}',
-                            textAlign: TextAlign.center)
-                      ])))
-            ]));
+                                  } catch (e) {
+                                    showToast('$e');
+                                    debugPrint('$e');
+                                  }
+                                },
+                                icon: const Icon(Icons.send))
+                            : IconButton(
+                                iconSize: 18.sp,
+                                onPressed: () {
+                                  showToast('Venta en proceso',
+                                      dismissOtherToast: true);
+                                },
+                                icon: const Icon(Icons.priority_high_sharp))
+                      ]),
+                      Text(
+                          'Estado: ${cerrado[transacciones.indexOf(item)] == 1 ? 'CERRADO' : 'Pediente'}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                          'Apertura\n${Textos.FechaYMDHMS(fecha: fechaIni[transacciones.indexOf(item)])}',
+                          textAlign: TextAlign.center),
+                      Text(
+                          'Cierre\n${fechaFin[transacciones.indexOf(item)] != null ? Textos.FechaYMDHMS(fecha: fechaFin[transacciones.indexOf(item)]!) : 'En proceso'}',
+                          textAlign: TextAlign.center)
+                    ]))));
       }).toList();
     }
 
     return Column(children: [
+      ElevatedButton.icon(
+          onPressed: () async {
+            final ventaDemo = await SQLHelperCortePropio.getItem(
+                proNavegacion.cortePropio!.transaccion!);
+            List<VentaModel> ventasTemp = [];
+            for (var element in ventaDemo) {
+              ventasTemp.add(element);
+            }
+            if (!proNavegacion.estadoSincronizacion) {
+              try {
+                await showDialog(
+                    context: context,
+                    builder: (context) =>
+                        DialogCorte(ventas: ventasTemp, visualizar: false));
+              } catch (e) {
+                showToast("$e");
+                debugPrint("$e");
+              }
+            }
+          },
+          icon: Icon(Icons.shopping_cart_checkout, size: 18.sp),
+          label: Text('Hacer Corte',
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  color: !proNavegacion.estadoSincronizacion
+                      ? Colors.black
+                      : Colors.grey))),
       Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text('Cortes Pendientes',
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold)),

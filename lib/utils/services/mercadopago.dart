@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:kiosko/controllers/user_controller.dart';
 import 'package:kiosko/models/MPago_intent_model.dart';
 import 'package:kiosko/utils/route/link.dart';
@@ -62,31 +63,34 @@ class Mercadopago {
 
   static Future<MPagoIntentModel?> sendIntencion(
       String deviceId, double amount) async {
-    try {
-      var mp = MP(clienteId, clienteSecret);
-      var convertir = amount * 100;
-      final user = await UserController.getItem();
-      final response = await mp.post(
-          "/point/integration-api/devices/$deviceId/payment-intents",
-          data: {
-            "amount": convertir,
-            "additional_info": {
-              "external_reference": "${Link.apiSoferp}-${user?.usuario}",
-              "print_on_terminal": Preferencias.imprimirMP
-            }
-          });
-      if (response['status'] == 200 || response['status'] == 201) {
-        log("${response["response"]}");
-        return MPagoIntentModel.fromJson(response["response"]);
-      } else {
-        showToast(
-            "${response["response"]["code"]}\n${response["response"]["message"]}");
-        return null;
-      }
-    } catch (e) {
-      log("$e");
+    //try {
+    var mp = MP(clienteId, clienteSecret);
+    var convertir = (double.parse(amount.toStringAsFixed(2)) * 100);
+    final user = await UserController.getItem();
+    debugPrint("monto = $convertir");
+    final response = await mp.post(
+        "/point/integration-api/devices/$deviceId/payment-intents",
+        data: {
+          "amount": convertir,
+          "additional_info": {
+            "external_reference": "${Link.apiSoferp}-${user?.usuario}",
+            "print_on_terminal": Preferencias.imprimirMP
+          }
+        });
+    if (response['status'] == 200 || response['status'] == 201) {
+      log("${response["response"]}");
+      return MPagoIntentModel.fromJson(response["response"]);
+    } else {
+      showToast(
+          "${response["response"]["code"]}\n${response["response"]["message"]}");
+      debugPrint(
+          "sendIntencion: ${response["response"]["code"]}\n${response["response"]["message"]}");
       return null;
     }
+    /* } catch (e) {
+      log("$e");
+      return null;
+    } */
   }
 
   static Future<MPagoPayIntentModel?> findIntencion(

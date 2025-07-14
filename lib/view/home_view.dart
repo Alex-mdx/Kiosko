@@ -1,6 +1,8 @@
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
 import 'package:kiosko/dialog/s_dialog_productos.dart';
 import 'package:kiosko/theme/app_colors.dart';
+import 'package:kiosko/theme/app_theme.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:kiosko/utils/services/impresora_configuracion.dart';
 import 'package:kiosko/utils/services/navigation_service.dart';
@@ -10,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:sizer/sizer.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:zo_collection_animation/zo_collection_animation.dart';
+import 'package:badges/badges.dart' as bd;
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -31,7 +35,7 @@ class HomeViewOpen extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeViewOpen> {
-  final productos = [
+/*   final productos = [
     {
       "id": 22,
       "descripcion": "Renta de cuatrimoto (15 min)",
@@ -122,13 +126,20 @@ class _HomeViewState extends State<HomeViewOpen> {
       "monto": 3.25,
       "img": "assets/14.png"
     }
-  ];
+  ]; */
   @override
   void initState() {
     super.initState();
     ImpresoraConnect.conectAuto(widget.provider);
     widget.provider.logeo();
     internet();
+  }
+
+  void totalizar() {
+    debugPrint("entro");
+    setState(() {
+      widget.provider.totalSumatoria();
+    });
   }
 
   Future<void> internet() async {
@@ -146,6 +157,7 @@ class _HomeViewState extends State<HomeViewOpen> {
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey animatedKey = GlobalKey();
     return PopScope(
         canPop: false,
         child: Scaffold(
@@ -166,9 +178,57 @@ class _HomeViewState extends State<HomeViewOpen> {
                         })
                   ])
                 ]),
-            body: ProductoWidget(),
+            body: ProductoWidget(keyAnima: animatedKey, fun: totalizar),
             floatingActionButton:
                 Column(mainAxisSize: MainAxisSize.min, children: [
+              ZoCollectionDestination(
+                  key: animatedKey,
+                  child: bd.Badge(
+                      badgeAnimation: bd.BadgeAnimation.size(),
+                      position: bd.BadgePosition.topEnd(),
+                      badgeStyle: bd.BadgeStyle(badgeColor: Colors.transparent),
+                      showBadge: widget.provider.listaDetalle.isNotEmpty,
+                      badgeContent: Container(
+                          decoration: BoxDecoration(
+                              color: LightThemeColors.green,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.borderRadius)),
+                          child: Padding(
+                              padding: EdgeInsets.all(4.sp),
+                              child: AnimatedFlipCounter(
+                                  value: widget.provider.totalSumatoria(),
+                                  prefix: "\$",
+                                  duration: Durations.extralong1,
+                                  textStyle: TextStyle(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: LightThemeColors.background)))),
+                      child: ElevatedButton(
+                          style: ButtonStyle(
+                              backgroundColor: WidgetStatePropertyAll(
+                                  LightThemeColors.primary)),
+                          onPressed: () async {
+                            if (widget.provider.selectDevice != null) {
+                              if (widget.provider.pointNow != null) {
+                                if (widget.provider.listaDetalle.isNotEmpty) {
+                                  await showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) => SDialogProductos());
+                                } else {
+                                  showToast("No ha ingresado ningun producto");
+                                }
+                              } else {
+                                showToast("No hay ninguna terminal conectada");
+                              }
+                            } else {
+                              showToast("Conecte una impresora");
+                            }
+                          },
+                          child: Text("Pagar",
+                              style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: LightThemeColors.grey))))),
               ElevatedButton(
                   style: ButtonStyle(
                       backgroundColor:
@@ -178,30 +238,6 @@ class _HomeViewState extends State<HomeViewOpen> {
                     await Navigation.pushNamed(route: 'banner');
                   },
                   child: Text("Cancelar",
-                      style: TextStyle(
-                          fontSize: 14.sp, color: LightThemeColors.grey))),
-              ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor:
-                          WidgetStatePropertyAll(LightThemeColors.primary)),
-                  onPressed: () async {
-                    if (widget.provider.selectDevice != null) {
-                      if (widget.provider.pointNow != null) {
-                        if (widget.provider.listaDetalle.isNotEmpty) {
-                          await showDialog(
-                              context: context,
-                              builder: (context) => SDialogProductos());
-                        } else {
-                          showToast("No ha ingresado ningun producto");
-                        }
-                      } else {
-                        showToast("No hay ninguna terminal conectada");
-                      }
-                    } else {
-                      showToast("Conecte una impresora");
-                    }
-                  },
-                  child: Text("Pagar",
                       style: TextStyle(
                           fontSize: 14.sp, color: LightThemeColors.grey)))
             ]),

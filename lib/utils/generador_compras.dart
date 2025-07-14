@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:kiosko/controllers/user_controller.dart';
 import 'package:kiosko/models/venta_pago_model.dart';
 import 'package:kiosko/utils/main_provider.dart';
@@ -122,7 +121,7 @@ class GeneradorCompras {
       log('${ventaDetalle.toJson()}');
       provider.listaDetalle.add(ventaDetalle);
     }
-    provider.totalSumatoria();
+    
   }
 
   static Future<void> verificarCarrito(MainProvider provider,

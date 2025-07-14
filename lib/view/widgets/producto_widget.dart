@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:kiosko/controllers/producto_controller.dart';
 import 'package:kiosko/theme/app_colors.dart';
 import 'package:kiosko/utils/main_provider.dart';
@@ -12,7 +11,9 @@ import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:sizer/sizer.dart';
 
 class ProductoWidget extends StatefulWidget {
-  const ProductoWidget({super.key});
+  final GlobalKey keyAnima;
+  final Function fun;
+  const ProductoWidget({super.key, required this.keyAnima, required this.fun});
 
   @override
   State<ProductoWidget> createState() => _ProductoWidgetState();
@@ -63,7 +64,6 @@ class _ProductoWidgetState extends State<ProductoWidget> {
                 : LiquidPullToRefresh(
                     springAnimationDurationInMilliseconds: 500,
                     onRefresh: () async {
-                      
                       await ProductosController.getApiProductos(provider);
                       setState(() {});
                       showToast("Productos actualizados");
@@ -79,7 +79,10 @@ class _ProductoWidgetState extends State<ProductoWidget> {
                             itemCount: snapshot.data!.length,
                             itemBuilder: (context, index) {
                               var producto = snapshot.data![index];
-                              return CardProductoWidget(producto: producto);
+                              return CardProductoWidget(
+                                  producto: producto,
+                                  keyAnima: widget.keyAnima,
+                                  fun: widget.fun);
                             })));
           } else if (snapshot.hasError) {
             return Center(

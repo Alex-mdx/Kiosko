@@ -141,7 +141,7 @@ class MainProvider with ChangeNotifier {
   double totalSumatoria() {
     var monto = 0.0;
     for (var element in listaDetalle) {
-      monto += element.total ?? 0;
+      monto += double.parse((element.total ?? 0).toStringAsFixed(4));
     }
     return monto;
   }

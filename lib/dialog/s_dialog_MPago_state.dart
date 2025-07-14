@@ -21,7 +21,10 @@ class SDialogMpagoState extends StatefulWidget {
   final MPagoIntentModel intencion;
   final PagoModel pago;
   const SDialogMpagoState(
-      {super.key, required this.intencion, required this.provider, required this.pago});
+      {super.key,
+      required this.intencion,
+      required this.provider,
+      required this.pago});
 
   @override
   State<SDialogMpagoState> createState() => _SDialogMpagoStateState();
@@ -34,6 +37,7 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
   bool pagoBool = false;
   Timer? _timer;
   int finalizar = 0;
+  bool enviar = false;
 
   ///cuando llegue a 5 se cancela de manera automatica
   String estado = "";
@@ -63,7 +67,7 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
         setState(() {
           intencionPago = intencion;
         });
-        if (finalizar == 7 &&
+        if (finalizar == 9 &&
             Mercadopago.string(state: intencionPago?.state ?? "") ==
                 "En espera") {
           showToast("Se ha excedido el tiempo de espera\nCancelando intencion");
@@ -85,13 +89,24 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
             pagoBool = true;
           });
           if (pago?.status == "approved") {
-            var venta = await GeneradorCompras.pagar(widget.provider, widget.pago);
-            await PrintFinal.ventaBoletaje(provider: widget.provider,type: widget.provider.selectDevice!,venta: venta);
-            widget.provider.listaDetalle.clear();
+            if (!enviar) {
+              enviar = true;
+              var venta =
+                  await GeneradorCompras.pagar(widget.provider, widget.pago);
+              await PrintFinal.ventaBoletaje(
+                  provider: widget.provider,
+                  type: widget.provider.selectDevice!,
+                  venta: venta);
+              setState(() {
+                widget.provider.listaDetalle.clear();
+                widget.provider.totalSumatoria();
+              });
+            }
           }
           _timer?.cancel();
         }
-        Future.delayed(Duration(seconds: 3), () => Navigation.pop());
+        widget.provider.totalSumatoria();
+        Future.delayed(Duration(seconds: 4), () => Navigation.pop());
       }
     });
   }

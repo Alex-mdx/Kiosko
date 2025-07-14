@@ -61,7 +61,7 @@ class SqlOperaciones {
             position: const ToastPosition(align: Alignment.center),
             dismissOtherToast: true);
         return ventaActual.copyWith(
-            errorVenta: response.body, status: response.statusCode);
+            errorVenta: response.body, status: response.statusCode, cerrado: 1);
       }
     } catch (e) {
       debugPrint('Error $e');
@@ -69,7 +69,7 @@ class SqlOperaciones {
           duration: const Duration(seconds: 6),
           position: const ToastPosition(align: Alignment.center),
           dismissOtherToast: true);
-      return ventaActual.copyWith(errorVenta: '$e', status: -1);
+      return ventaActual.copyWith(errorVenta: '$e', status: -1, cerrado: 1);
     }
   }
 

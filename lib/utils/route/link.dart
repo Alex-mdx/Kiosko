@@ -23,6 +23,7 @@ class Link {
   static String apiPin = "$apiSoferp/app/autorizaciones/pin";
   static String apiVentaEliminar = "$apiSoferp/app/ventas";
   static String apiUrlContacto = '$apiSoferp/app/contactos?database_id=';
+  static String apiFamilia = "$apiSoferp/app/familias_producto?database_id=";
 }
 
 class Servidor {

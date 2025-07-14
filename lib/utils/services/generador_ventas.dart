@@ -1,7 +1,3 @@
-import 'dart:developer';
-
-import 'package:get/get.dart';
-
 import '../../models/categoria_model.dart';
 import '../../models/cortes_model.dart';
 import '../../models/venta_model.dart';

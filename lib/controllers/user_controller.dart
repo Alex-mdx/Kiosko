@@ -76,7 +76,7 @@ class UserController {
   }
 
   static Future<String> login(List<String> login, MainProvider provider) async {
-    double porcentaje = 100 / 8;
+    double porcentaje = 100 / 9 ;
     final uri = Uri.parse(Link.apiLogin);
     debugPrint('$uri');
     String body = jsonEncode({'usuario': login[0], 'password': login[1]});
