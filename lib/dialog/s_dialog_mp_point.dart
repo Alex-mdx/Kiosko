@@ -113,14 +113,12 @@ class _SDialogMpPointState extends State<SDialogMpPoint> {
                               tileColor: point.operatingMode == "PDV"
                                   ? LightThemeColors.green
                                   : LightThemeColors.red,
-                              title: Column(
-                                children: [
-                                  Text(point.id,
-                                      style: TextStyle(fontSize: 12.sp)),
-                                  Text(point.externalPosId,
-                                      style: TextStyle(fontSize: 12.sp))
-                                ]
-                              ),
+                              title: Column(children: [
+                                Text(point.id,
+                                    style: TextStyle(fontSize: 12.sp)),
+                                Text(point.externalPosId,
+                                    style: TextStyle(fontSize: 12.sp))
+                              ]),
                               subtitle: Text(
                                   "Pos id: ${point.posId} - Store id: ${point.storeId}",
                                   style: TextStyle(fontSize: 12.sp))));
