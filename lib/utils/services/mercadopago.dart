@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:kiosko/controllers/user_controller.dart';
 import 'package:kiosko/models/MPago_intent_model.dart';
 import 'package:kiosko/utils/route/link.dart';
@@ -13,8 +13,11 @@ import '../../models/MPago_point_model.dart';
 import '../../models/Mpago_pay_intent_model.dart';
 
 class Mercadopago {
-  static String clienteId = "4929852312805237";
-  static String clienteSecret = "q8udcOSpKTXkDSG1cXs87yQQfTv2XJvf";
+  static String clienteId =
+      kDebugMode ? "4929852312805237" : "4146856788030165";
+  static String clienteSecret = kDebugMode
+      ? "q8udcOSpKTXkDSG1cXs87yQQfTv2XJvf"
+      : "Mdz4aDWBKTxxmHhjvq0PM8Yes0t3SXRM";
 
   static Future<List<MPagoPointModel>> getTPoint() async {
     try {
@@ -51,46 +54,47 @@ class Mercadopago {
         log("${response["response"]}");
         return MPagoIntentModel.fromJson(response["response"]);
       } else {
+        log("cancelarIntencion: ${response["response"]["code"]}\n${response["response"]["message"]}");
         showToast(
-            "${response["response"]["code"]}\n${response["response"]["message"]}");
+            "${response["response"]["message"]}\nLa intencion pago o el mismo pago puede que ya se haya enviado");
         return null;
       }
     } catch (e) {
-      log("$e");
+      log("cancelarIntencion: $e");
       return null;
     }
   }
 
   static Future<MPagoIntentModel?> sendIntencion(
       String deviceId, double amount) async {
-    //try {
-    var mp = MP(clienteId, clienteSecret);
-    var convertir = (double.parse(amount.toStringAsFixed(2)) * 100);
-    final user = await UserController.getItem();
-    debugPrint("monto = $convertir");
-    final response = await mp.post(
-        "/point/integration-api/devices/$deviceId/payment-intents",
-        data: {
-          "amount": convertir,
-          "additional_info": {
-            "external_reference": "${Link.apiSoferp}-${user?.usuario}",
-            "print_on_terminal": Preferencias.imprimirMP
-          }
-        });
-    if (response['status'] == 200 || response['status'] == 201) {
-      log("${response["response"]}");
-      return MPagoIntentModel.fromJson(response["response"]);
-    } else {
-      showToast(
-          "${response["response"]["code"]}\n${response["response"]["message"]}");
-      debugPrint(
-          "sendIntencion: ${response["response"]["code"]}\n${response["response"]["message"]}");
-      return null;
-    }
-    /* } catch (e) {
+    try {
+      var mp = MP(clienteId, clienteSecret);
+      var convertir = (double.parse(amount.toStringAsFixed(2)) * 100);
+      final user = await UserController.getItem();
+      debugPrint("monto = $convertir");
+      final response = await mp.post(
+          "/point/integration-api/devices/$deviceId/payment-intents",
+          data: {
+            "amount": convertir,
+            "additional_info": {
+              "external_reference": "${Link.apiSoferp}-C${user?.contactoId}",
+              "print_on_terminal": Preferencias.imprimirMP
+            }
+          });
+      if (response['status'] == 200 || response['status'] == 201) {
+        log("${response["response"]}");
+        return MPagoIntentModel.fromJson(response["response"]);
+      } else {
+        showToast(
+            "${response["response"]["code"]}\n${response["response"]["message"]}");
+        debugPrint(
+            "sendIntencion: ${response["response"]["code"]}\n${response["response"]["message"]}");
+        return null;
+      }
+    } catch (e) {
       log("$e");
       return null;
-    } */
+    }
   }
 
   static Future<MPagoPayIntentModel?> findIntencion(
@@ -116,7 +120,7 @@ class Mercadopago {
         return null;
       }
     } catch (e) {
-      log("$e");
+      log("findIntencion: $e");
       return null;
     }
   }
@@ -126,7 +130,7 @@ class Mercadopago {
       var mp = MP(clienteId, clienteSecret);
       final response = await mp.getPayment(id);
       if (response['status'] == 200 || response['status'] == 201) {
-        log("${response["response"]}");
+        log("pago ${response["response"]}");
         return MPagoPaymentModel.fromJson(response["response"]);
       } else {
         showToast(

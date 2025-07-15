@@ -23,6 +23,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = PostHttpOverrides();
   await Preferencias.init();
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]).then((_) {
     runApp(MultiProvider(
@@ -38,7 +39,7 @@ class POS extends StatelessWidget {
       builder: ((context, orientation, deviceType) => OKToast(
           position: ToastPosition.bottom,
           dismissOtherOnShow: true,
-          textStyle: TextStyle(fontSize: 14.sp, color: LightThemeColors.grey),
+          textStyle: TextStyle(fontSize: 15.sp, color: LightThemeColors.grey),
           duration: const Duration(seconds: 4),
           child: MaterialApp(
               localizationsDelegates: const [

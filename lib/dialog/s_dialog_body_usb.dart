@@ -31,19 +31,19 @@ class _MyWidgetState extends State<DialogImpresora> {
   var printer = PrinterManager.instance;
   PrinterType? tipoPrinter;
   List<PrinterModel> devices = [];
-  PaperSize tipoPapel = PaperSize.mm80;
+  PaperSize tipoPapel = PaperSize.mm58;
   /* PrinterDevice? selectDevice;
   List<PrinterDevice> dispositivosPrint = []; */
   bool starscan = false;
   static Map mmPaper = {
-    PaperSize.mm80.value: '80mm',
+    //PaperSize.mm80.value: '80mm',
     PaperSize.mm72.value: '72mm',
     PaperSize.mm58.value: '58mm'
   };
 
   List<PrinterType> Connection = [
     PrinterType.bluetooth,
-    PrinterType.usb,
+    //PrinterType.usb,
     //PrinterType.network
   ];
 
@@ -156,30 +156,16 @@ class _MyWidgetState extends State<DialogImpresora> {
                     excludeSelected: true,
                     initialItem: tipoPapel,
                     decoration: CustomDropdownDecoration(
-                        closedSuffixIcon: Icon(tipoPapel == PaperSize.mm80
-                            ? Icons.density_large
-                            : tipoPapel == PaperSize.mm72
-                                ? Icons.density_medium
-                                : Icons.density_small)),
+                        closedSuffixIcon: Icon(tipoPapel == PaperSize.mm72
+                            ? Icons.density_medium
+                            : Icons.density_small)),
                     headerBuilder: (context, selectedItem, enabled) => Text(
-                        selectedItem == PaperSize.mm80
-                            ? "80 mm"
-                            : selectedItem == PaperSize.mm72
-                                ? "72 mm"
-                                : "58 mm",
+                        selectedItem == PaperSize.mm72 ? "72 mm" : "58 mm",
                         style: const TextStyle(fontWeight: FontWeight.bold)),
-                    items: const [
-                      PaperSize.mm80,
-                      PaperSize.mm72,
-                      PaperSize.mm58
-                    ],
+                    items: const [PaperSize.mm58, PaperSize.mm72],
                     listItemBuilder:
                         (context, item, isSelected, onItemSelect) =>
-                            Text(item == PaperSize.mm80
-                                ? "80 mm"
-                                : item == PaperSize.mm72
-                                    ? "72 mm"
-                                    : "58 mm"),
+                            Text(item == PaperSize.mm72 ? "72 mm" : "58 mm"),
                     onChanged: (p0) => setState(() {
                           log('${tipoPapel.value} - $p0');
                           tipoPapel = p0!;

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class UsuarioModel {
   int id;
   String? uuid;
@@ -10,6 +12,7 @@ class UsuarioModel {
   String? password;
   String? token;
   int? almacenId;
+  List<int> almacenes;
   int? sucursalId;
   int? empresaId;
   int? clienteId;
@@ -35,6 +38,7 @@ class UsuarioModel {
       required this.password,
       required this.token,
       required this.almacenId,
+      required this.almacenes,
       required this.sucursalId,
       required this.empresaId,
       required this.clienteId,
@@ -61,6 +65,7 @@ class UsuarioModel {
           String? password,
           String? token,
           int? almacenId,
+          List<int>? almacenes,
           int? sucursalId,
           int? empresaId,
           int? clienteId,
@@ -85,6 +90,7 @@ class UsuarioModel {
           password: password ?? this.password,
           token: token ?? this.token,
           almacenId: almacenId ?? this.almacenId,
+          almacenes: almacenes ?? this.almacenes,
           sucursalId: sucursalId ?? this.sucursalId,
           empresaId: empresaId ?? this.empresaId,
           clienteId: clienteId ?? this.clienteId,
@@ -110,6 +116,10 @@ class UsuarioModel {
       password: json["password"],
       token: json["token"],
       almacenId: json["almacen_id"],
+      almacenes: json["almacenes"] == null
+          ? []
+          : List<int>.from(
+              jsonDecode(json["almacenes"].toString()).map((x) => x)),
       sucursalId: json["sucursal_id"],
       empresaId: json["empresa_id"],
       clienteId: json["cliente_id"],
@@ -135,6 +145,7 @@ class UsuarioModel {
         "password": password,
         "token": token,
         "almacen_id": almacenId,
+        "almacenes": List<dynamic>.from(almacenes.map((x) => x)),
         "sucursal_id": sucursalId,
         "empresa_id": empresaId,
         "cliente_id": clienteId,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kiosko/controllers/producto_controller.dart';
+import 'package:kiosko/dialog/s_dialog_pin.dart';
 import 'package:kiosko/theme/app_colors.dart';
 import 'package:kiosko/utils/main_provider.dart';
 import 'package:kiosko/utils/services/dialog_services.dart';
@@ -9,6 +10,8 @@ import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:sizer/sizer.dart';
+
+import '../../controllers/operacion_controller.dart';
 
 class ProductoWidget extends StatefulWidget {
   final GlobalKey keyAnima;
@@ -64,9 +67,33 @@ class _ProductoWidgetState extends State<ProductoWidget> {
                 : LiquidPullToRefresh(
                     springAnimationDurationInMilliseconds: 500,
                     onRefresh: () async {
-                      await ProductosController.getApiProductos(provider);
-                      setState(() {});
-                      showToast("Productos actualizados");
+                      var aceptar = false;
+                      int? codigo;
+                      await Dialogs.showMorph(
+                          title: "Descargar productos",
+                          description:
+                              "¿Desea actualizar los productos?\nSe enviara un codigo de autorizacion para que pueda proseguir",
+                          loadingTitle: "Validando",
+                          onAcceptPressed: (context) async {
+                            aceptar = true;
+                            codigo = await SqlOperaciones.solicitarPin();
+                          });
+                      var sync = false;
+                      if (aceptar) {
+                        await showDialog(
+                            context: context,
+                            builder: (context) => SDialogPin(
+                                codigo: codigo.toString(),
+                                acepta: (p0) async {
+                                  sync = p0;
+                                }));
+                        if (sync) {
+                          await ProductosController.getApiProductos(provider);
+                          provider.listaDetalle.clear();
+                          widget.fun();
+                          showToast("Productos actualizados");
+                        }
+                      }
                     },
                     child: Scrollbar(
                         child: GridView.builder(

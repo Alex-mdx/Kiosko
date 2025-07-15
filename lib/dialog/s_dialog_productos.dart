@@ -196,7 +196,7 @@ class _SDialogProductosState extends State<SDialogProductos> {
                               provider.pointNow!.id, provider.totalSumatoria());
                         } else {
                           showToast("No hay ninguna impresora conectada");
-                        }
+                        } 
                         if (intent != null) {
                           await showDialog(
                               context: context,

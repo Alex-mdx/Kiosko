@@ -59,9 +59,8 @@ class UserController {
 
   static Future<bool> existColumna(String columnaAdd) async {
     final db1 = await database();
-    List<Map<String, dynamic>> columnas = await db1.rawQuery(
-      'PRAGMA table_info($nombreDB)',
-    );
+    List<Map<String, dynamic>> columnas =
+        await db1.rawQuery('PRAGMA table_info($nombreDB)');
 
     for (Map<String, dynamic> columna in columnas) {
       String name = columna['name'];
@@ -76,23 +75,33 @@ class UserController {
   }
 
   static Future<String> login(List<String> login, MainProvider provider) async {
-    double porcentaje = 100 / 9 ;
+    double porcentaje = 100 / 9;
     final uri = Uri.parse(Link.apiLogin);
     debugPrint('$uri');
     String body = jsonEncode({'usuario': login[0], 'password': login[1]});
+    await existColumna("almacenes");
     try {
       final response = await http
           .post(uri, body: body, headers: {'Content-Type': 'application/json'});
       if (response.statusCode == 200) {
         final jasonData = jsonDecode(response.body);
         final usuarioBack = (await getItem());
-        if (jasonData["almacen_id"] != null &&
-            jasonData["sucursal_id"] != null &&
+        if (jasonData["sucursal_id"] != null &&
             jasonData["empresa_id"] != null &&
             jasonData["cliente_id"] != null &&
             jasonData["vendedor_id"] != null &&
             jasonData["razon_social_id"] != null &&
             jasonData["cuenta_bancaria_id"] != null) {
+          var almacenParse = ((jasonData["almacenes"].toString() == "null"
+                  ? []
+                  : jasonData["almacenes"]
+                      .toString()
+                      .replaceAll("[", "")
+                      .replaceAll("]", "")
+                      .split(",")))
+              .map((e) => int.parse(e))
+              .toList();
+          debugPrint("$almacenParse");
           UsuarioModel user = UsuarioModel(
               id: jasonData["id"],
               uuid: jasonData["uuid"],
@@ -105,6 +114,9 @@ class UserController {
               password: login[1],
               token: jasonData["token"],
               almacenId: jasonData["almacen_id"],
+              almacenes: jasonData["almacenes"] == null
+                  ? []
+                  : List<int>.from(almacenParse),
               sucursalId: jasonData["sucursal_id"],
               empresaId: jasonData["empresa_id"],
               clienteId: jasonData["cliente_id"],
@@ -156,7 +168,7 @@ class UserController {
           provider.cargaApi = 0;
           await deleteAll();
           showToast(
-              'Error con el la cuenta de usuario\n no se configuro algun ${jasonData["almacen_id"] == null ? 'Almacen_id, ' : ''}${jasonData["sucursal_id"] == null ? 'sucursal_id, ' : ''}${jasonData["empresa_id"] == null ? 'empresa_id, ' : ''} ${jasonData["cliente_id"] == null ? 'cliente_id, ' : ''}${jasonData["vendedor_id"] == null ? 'vendedor_id, ' : ''}${jasonData["razon_social_id"] == null ? 'razon_social_id ' : ''}${jasonData["cuenta_bancaria_id"] == null ? 'cuenta_bancaria_id ' : ''}');
+              'Error con el la cuenta de usuario\n no se configuro algun ${jasonData["sucursal_id"] == null ? 'sucursal_id, ' : ''}${jasonData["empresa_id"] == null ? 'empresa_id, ' : ''} ${jasonData["cliente_id"] == null ? 'cliente_id, ' : ''}${jasonData["vendedor_id"] == null ? 'vendedor_id, ' : ''}${jasonData["razon_social_id"] == null ? 'razon_social_id ' : ''}${jasonData["cuenta_bancaria_id"] == null ? 'cuenta_bancaria_id ' : ''}');
           return "idle";
         }
       } else {
@@ -176,18 +188,20 @@ class UserController {
 
   static Future<UsuarioModel?> getItem() async {
     final db = await database();
+    await existColumna("almacenes");
     final data = (await db.query(nombreDB, limit: 1)).firstOrNull;
     return data == null ? null : UsuarioModel.fromJson(data);
   }
 
   static Future<void> insert(UsuarioModel user) async {
     final db = await database();
+    await existColumna("almacenes");
     await db.insert(nombreDB, user.toJson());
   }
 
   static Future<void> updateUser(UsuarioModel user) async {
     final db = await database();
-    await existColumna("apertura");
+    await existColumna("almacenes");
     await db.update(nombreDB, user.toJson(),
         where: 'uuid = ?',
         whereArgs: [user.uuid],
@@ -196,6 +210,7 @@ class UserController {
 
   static Future<void> deleteAll() async {
     final db = await database();
+    await existColumna("almacenes");
     await db.delete(nombreDB);
   }
 }

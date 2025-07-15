@@ -1,4 +1,4 @@
-package com.example.kiosko
+package com.soferp.kiosko
 
 import io.flutter.embedding.android.FlutterActivity
 

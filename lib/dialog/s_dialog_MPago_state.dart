@@ -11,6 +11,7 @@ import 'package:kiosko/utils/main_provider.dart';
 import 'package:kiosko/utils/services/mercadopago.dart';
 import 'package:kiosko/utils/services/navigation_service.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:sizer/sizer.dart';
 import 'package:translator/translator.dart';
 
@@ -38,6 +39,7 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
   Timer? _timer;
   int finalizar = 0;
   bool enviar = false;
+  bool close = false;
 
   ///cuando llegue a 5 se cancela de manera automatica
   String estado = "";
@@ -67,13 +69,6 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
         setState(() {
           intencionPago = intencion;
         });
-        if (finalizar == 9 &&
-            Mercadopago.string(state: intencionPago?.state ?? "") ==
-                "En espera") {
-          showToast("Se ha excedido el tiempo de espera\nCancelando intencion");
-          await Mercadopago.cancelarIntencion(
-              widget.provider.pointNow!.id, widget.intencion.id);
-        }
       } else {
         if (intencionPago?.state == "FINISHED") {
           var payment =
@@ -96,17 +91,27 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
               await PrintFinal.ventaBoletaje(
                   provider: widget.provider,
                   type: widget.provider.selectDevice!,
-                  venta: venta);
-              setState(() {
-                widget.provider.listaDetalle.clear();
-                widget.provider.totalSumatoria();
-              });
+                  venta: venta,
+                  transaccion: payment);
+
+              widget.provider.listaDetalle.clear();
+              widget.provider.totalSumatoria();
             }
           }
           _timer?.cancel();
         }
-        widget.provider.totalSumatoria();
-        Future.delayed(Duration(seconds: 4), () => Navigation.pop());
+
+        if (close == false) {
+          close = true;
+          Future.delayed(Duration(seconds: 4), () => Navigation.popTwice());
+        }
+      }
+      if (finalizar >= 10 &&
+          Mercadopago.string(state: intencionPago?.state ?? "") ==
+              "En espera") {
+        showToast("Se ha excedido el tiempo de espera\nCancelando intencion");
+        await Mercadopago.cancelarIntencion(
+            widget.provider.pointNow!.id, widget.intencion.id);
       }
     });
   }
@@ -152,7 +157,24 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
                             style: TextStyle(
                                 fontSize: 16.sp, fontWeight: FontWeight.bold)),
                         CircularProgressIndicator()
-                      ])
+                      ]),
+                    if (enviar)
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            RiveAnimatedIcon(
+                                riveIcon: RiveIcon.copy,
+                                color: LightThemeColors.darkBlue,
+                                height: 7.w,
+                                width: 7.w,
+                                loopAnimation: true),
+                            Text("Imprimiendo voucher",
+                                style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontStyle: FontStyle.italic))
+                          ])
                   ])
                 ]))));
   }

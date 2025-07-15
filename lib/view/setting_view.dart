@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kiosko/controllers/user_controller.dart';
 import 'package:kiosko/dialog/s_dialog_familia.dart';
 import 'package:kiosko/utils/main_provider.dart';
+import 'package:kiosko/utils/shared_preferences.dart';
 import 'package:kiosko/view/widgets/sync_sincronizar_widget.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,7 @@ import '../dialog/s_dialog_pin.dart';
 import '../models/usuario_model.dart';
 import '../theme/app_colors.dart';
 import '../utils/services/dialog_services.dart';
+import '../utils/services/navigation_service.dart';
 import 'widgets/sync_pagos_widget.dart';
 
 class SettingView extends StatefulWidget {
@@ -66,82 +68,118 @@ class _SettingViewState extends State<SettingView> {
   Widget build(BuildContext context) {
     final provider = Provider.of<MainProvider>(context);
     return PopScope(
-      canPop: !provider.estadoSincronizacion,
-      child: Scaffold(
-          appBar: AppBar(title: Text("Configuracion"), actions: [
-            ElevatedButton.icon(
-                onPressed: () async {
-                  int? codigo;
-                  bool type = false;
-                  await Dialogs.showMorph(
-                      title: 'Cambiar folio de punto de venta',
-                      description:
-                          'Se intenta cambiar folio, oprima el boton de ACEPTAR\npara enviar un codigo de autorización al administrador',
-                      loadingTitle: 'Enviando autorizacion...',
-                      onAcceptPressed: (context) async {
-                        codigo = await SqlOperaciones.solicitarPin();
-                        debugPrint('$codigo');
-                      });
-                  if (codigo != null) {
-                    await showDialog(
-                        context: context,
-                        builder: (context) => SDialogPin(
-                            codigo: codigo.toString(),
-                            acepta: (p0) async => type = p0));
-                  }
-                  if (type) {
-                    showDialog(
-                        context: context,
-                        builder: (context) => DialoGeneral(
-                            encabezado: 'Ingresar Folio',
-                            subText:
-                                'Por favor, introduzca el número siguiente al folio actual',
-                            child: folioSelect(provider)));
-                  }
-                },
-                icon: Icon(Icons.shopping_cart_sharp, size: 18.sp),
-                label: Text('Modificar folio: ${provider.user?.consecutivo}',
-                    style: TextStyle(fontSize: (11).sp))),
-            IconButton.filled(
-                iconSize: 18.sp,
-                onPressed: () => showDialog(
-                    context: context,
-                    builder: (context) => Dialog(child: DialogImpresora())),
-                icon: Icon(
-                    provider.selectDevice == null
-                        ? Icons.print_disabled
-                        : Icons.print,
-                    color: LightThemeColors.background)),
-            ElevatedButton(
-                onPressed: () => showDialog(
-                    context: context, builder: (context) => SDialogMpPoint()),
-                child: Icon(Icons.point_of_sale,
-                    size: 20.sp,
-                    color: provider.pointNow == null
-                        ? LightThemeColors.darkGrey
-                        : LightThemeColors.green)),
-            IconButton.filled(
-                onPressed: () => showAdaptiveDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    barrierLabel: 'administrador',
-                    builder: (context) =>
-                        Dialog(child: DialogAdmin(proNavegacion: provider))),
-                icon: Icon(Icons.admin_panel_settings_sharp,
-                    size: 18.sp, color: Colors.white))
-          ]),
-          body: Column(children: [
-            SyncPanelPagos(),
-            Divider(),
-            SyncPanelSincro(),
-            ElevatedButton.icon(
-                icon: Icon(Icons.group_work,
-                    size: 20.sp, color: LightThemeColors.green),
-                onPressed: () => showDialog(
-                    context: context, builder: (context) => SDialogFamilia()),
-                label:
-                    Text("Familia filtro", style: TextStyle(fontSize: 14.sp)))
-          ])),
-    );
+        canPop: !provider.estadoSincronizacion,
+        child: Scaffold(
+            appBar: AppBar(
+                title: Text("Configuracion", style: TextStyle(fontSize: 16.sp)),
+                actions: [
+                  ElevatedButton.icon(
+                      onPressed: () async {
+                        int? codigo;
+                        bool type = false;
+                        await Dialogs.showMorph(
+                            title: 'Cambiar folio de punto de venta',
+                            description:
+                                'Se intenta cambiar folio, oprima el boton de ACEPTAR\npara enviar un codigo de autorización al administrador',
+                            loadingTitle: 'Enviando autorizacion...',
+                            onAcceptPressed: (context) async {
+                              codigo = await SqlOperaciones.solicitarPin();
+                              debugPrint('$codigo');
+                            });
+                        if (codigo != null) {
+                          await showDialog(
+                              context: context,
+                              builder: (context) => SDialogPin(
+                                  codigo: codigo.toString(),
+                                  acepta: (p0) async => type = p0));
+                        }
+                        if (type) {
+                          showDialog(
+                              context: context,
+                              builder: (context) => DialoGeneral(
+                                  encabezado: 'Ingresar Folio',
+                                  subText:
+                                      'Por favor, introduzca el número siguiente al folio actual',
+                                  child: folioSelect(provider)));
+                        }
+                      },
+                      icon: Icon(Icons.shopping_cart_sharp, size: 18.sp),
+                      label: Text(
+                          'Modificar folio: ${provider.user?.consecutivo}',
+                          style: TextStyle(fontSize: (11).sp))),
+                  IconButton.filled(
+                      onPressed: () => showAdaptiveDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          barrierLabel: 'administrador',
+                          builder: (context) => Dialog(
+                              child: DialogAdmin(proNavegacion: provider))),
+                      icon: Icon(Icons.admin_panel_settings_sharp,
+                          size: 18.sp, color: Colors.white)),
+                  IconButton(
+                      onPressed: () => Dialogs.showMorph(
+                          title: "Salir de la sesion",
+                          description:
+                              "¿Desea salir la actual sesion?\nEsta accion lo enviara a la ventana de login",
+                          loadingTitle: "Cerrando",
+                          onAcceptPressed: (context) async {
+                            Preferencias.logeado = false;
+                            await Navigation.pushNamedAndRemoveUntil(
+                                routeName: 'login');
+                          }),
+                      iconSize: 20.sp,
+                      icon:
+                          Icon(Icons.exit_to_app, color: LightThemeColors.red))
+                ]),
+            body: Column(children: [
+              SyncPanelPagos(),
+              Divider(),
+              Expanded(
+                child: Scrollbar(
+                  child: ListView(shrinkWrap: true, children: [
+                    SyncPanelSincro(),
+                    Wrap(
+                        alignment: WrapAlignment.spaceAround,
+                        spacing: 1.w,
+                        children: [
+                          ElevatedButton.icon(
+                              label: Text("impresora",
+                                  style: TextStyle(fontSize: 14.sp)),
+                              onPressed: () => showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      Dialog(child: DialogImpresora())),
+                              icon: Icon(
+                                  size: 18.sp,
+                                  provider.selectDevice == null
+                                      ? Icons.print_disabled
+                                      : Icons.print,
+                                  color: provider.selectDevice == null
+                                      ? LightThemeColors.darkGrey
+                                      : LightThemeColors.primary)),
+                          ElevatedButton.icon(
+                              label: Text("Terminal de cobro",
+                                  style: TextStyle(fontSize: 14.sp)),
+                              onPressed: () => showDialog(
+                                  context: context,
+                                  builder: (context) => SDialogMpPoint()),
+                              icon: Icon(Icons.point_of_sale,
+                                  size: 18.sp,
+                                  color: provider.pointNow == null
+                                      ? LightThemeColors.darkGrey
+                                      : LightThemeColors.green)),
+                          ElevatedButton.icon(
+                              icon: Icon(Icons.group_work,
+                                  size: 20.sp, color: LightThemeColors.green),
+                              onPressed: () => showDialog(
+                                  context: context,
+                                  builder: (context) => SDialogFamilia()),
+                              label: Text("Familia filtro",
+                                  style: TextStyle(fontSize: 14.sp)))
+                        ])
+                  ]),
+                ),
+              )
+            ])));
   }
 }

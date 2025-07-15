@@ -122,7 +122,7 @@ class _LoginViewState extends State<LoginView> {
                   await Navigation.pushReplacementNamed(routeName: 'home');
                 }
                 setState(() {
-                  iniciaSesion;
+                  iniciaSesion = iniciaSesion ;
                 });
               } else {
                 showToast("Operacion en proceso");

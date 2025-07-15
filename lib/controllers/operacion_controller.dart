@@ -24,7 +24,7 @@ class SqlOperaciones {
         apiKeyId: user.id,
         userId: user.userId,
         empresaId: user.empresaId,
-        almacenId: user.almacenId,
+        almacenId: user.almacenes.firstOrNull,
         sucursalId: user.sucursalId,
         cuentaBancariaId: user.cuentaBancariaId);
     String body = jsonEncode([ventaSync]);
@@ -120,7 +120,7 @@ class SqlOperaciones {
               vendedorId: ventaSesion[i].vendedorId,
               userId: proNavegar.user!.userId,
               empresaId: proNavegar.user!.empresaId,
-              almacenId: proNavegar.user!.almacenId,
+              almacenId: proNavegar.user!.almacenes.firstOrNull,
               sucursalId: proNavegar.user!.sucursalId,
               cuentaBancariaId: proNavegar.user!.cuentaBancariaId,
               moneda: ventaSesion[i].moneda,
@@ -206,8 +206,7 @@ class SqlOperaciones {
       'tipo_operacion': "Autorizacion de eliminacion de venta",
       'user_id': user.userId
     });
-    debugPrint("$uri");
-    debugPrint("${kDebugMode ? "alexarmandomdx@gmail.com" : empresa?.correo}");
+    debugPrint("$uri\nCorreo${kDebugMode ? "alexarmandomdx@gmail.com" : empresa?.correo}");
     try {
       final response =
           await http.post(uri, body: body, headers: Servidor.bodyHeader);

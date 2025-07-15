@@ -6,7 +6,7 @@ import '../theme/app_colors.dart';
 import '../utils/services/navigation_service.dart';
 
 class SDialogPin extends StatelessWidget {
-  final String codigo;
+  final String? codigo;
   final Function(bool) acepta;
   const SDialogPin({super.key, required this.codigo, required this.acepta});
 

@@ -15,6 +15,10 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import 'package:zo_collection_animation/zo_collection_animation.dart';
 import 'package:badges/badges.dart' as bd;
 
+import '../controllers/operacion_controller.dart';
+import '../dialog/s_dialog_pin.dart';
+import '../utils/services/dialog_services.dart';
+
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
@@ -35,98 +39,6 @@ class HomeViewOpen extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeViewOpen> {
-/*   final productos = [
-    {
-      "id": 22,
-      "descripcion": "Renta de cuatrimoto (15 min)",
-      "monto": 1.80,
-      "img": "assets/22.jpg"
-    },
-    {
-      "id": 3,
-      "descripcion": "Boleto de acceso VIP",
-      "monto": 9.99,
-      "img": "assets/3.png"
-    },
-    {
-      "id": 8,
-      "descripcion": "Pase familiar (2 personas)",
-      "monto": 4.30,
-      "img": "assets/8.jpg"
-    },
-    {
-      "id": 6,
-      "descripcion": "Tour en cabalgata (corto)",
-      "monto": 6.75,
-      "img": "assets/6.jpg"
-    },
-    {
-      "id": 1,
-      "descripcion": "Boleto de entrada general",
-      "monto": 7.25,
-      "img": "assets/1.png"
-    },
-    {
-      "id": 30,
-      "descripcion": "Refresco en lata (355ml)",
-      "monto": 7.60,
-      "img": "assets/30.jpg"
-    },
-    {
-      "id": 24,
-      "descripcion": "Alquiler de locker (1h)",
-      "monto": 7.45,
-      "img": "assets/24.png"
-    },
-    {
-      "id": 19,
-      "descripcion": "Foto con personaje (digital)",
-      "monto": 4.50,
-      "img": "assets/19.avif"
-    },
-    {
-      "id": 23,
-      "descripcion": "Snack pack (chocolate + agua)",
-      "monto": 6.95,
-      "img": "assets/23.png"
-    },
-    {
-      "id": 5,
-      "descripcion": "Pase express (1 atracción)",
-      "monto": 8.20,
-      "img": "assets/5.jpeg"
-    },
-    {
-      "id": 2,
-      "descripcion": "Recarga para juegos (5 créditos)",
-      "monto": 5.80,
-      "img": "assets/2.png"
-    },
-    {
-      "id": 12,
-      "descripcion": "Gorra oficial del parque",
-      "monto": 7.80,
-      "img": "assets/12.webp"
-    },
-    {
-      "id": 4,
-      "descripcion": "Estacionamiento básico",
-      "monto": 3.45,
-      "img": "assets/4.webp"
-    },
-    {
-      "id": 10,
-      "descripcion": "Boleto para montaña rusa",
-      "monto": 5.60,
-      "img": "assets/10.jpg"
-    },
-    {
-      "id": 14,
-      "descripcion": "Helado sencillo",
-      "monto": 3.25,
-      "img": "assets/14.png"
-    }
-  ]; */
   @override
   void initState() {
     super.initState();
@@ -166,16 +78,43 @@ class _HomeViewState extends State<HomeViewOpen> {
                     maxLines: 2, style: TextStyle(fontSize: 16.sp)),
                 actions: [
                   OverflowBar(children: [
-                    RiveAnimatedIcon(
-                        riveIcon: RiveIcon.settings,
-                        width: 12.w,
-                        height: 12.w,
-                        color: LightThemeColors.primary,
-                        strokeWidth: 4.w,
-                        loopAnimation: true,
-                        onTap: () async {
-                          await Navigation.pushNamed(route: "setting");
-                        })
+                    Container(
+                        decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.borderRadius),
+                            color: LightThemeColors.grey),
+                        child: RiveAnimatedIcon(
+                            riveIcon: RiveIcon.settings,
+                            width: 11.w,
+                            height: 11.w,
+                            color: LightThemeColors.primary,
+                            strokeWidth: 4.w,
+                            loopAnimation: true,
+                            onTap: () async {
+                              var aceptar = false;
+                              int? codigo;
+                              await Dialogs.showMorph(
+                                  title: "Acceder a configuraciones",
+                                  description:
+                                      "Para acceder a las configuraciones tendra que ingresar el codigo de verificacion",
+                                  loadingTitle: "Validando",
+                                  onAcceptPressed: (context) async {
+                                    aceptar = true;
+                                    codigo =
+                                        await SqlOperaciones.solicitarPin();
+                                  });
+                              var sync = false;
+                              if (aceptar) {
+                                await showDialog(
+                                    context: context,
+                                    builder: (context) => SDialogPin(
+                                        codigo: codigo.toString(),
+                                        acepta: (p0) async => sync = p0));
+                              }
+                              if (sync) {
+                                await Navigation.pushNamed(route: "setting");
+                              }
+                            }))
                   ])
                 ]),
             body: ProductoWidget(keyAnima: animatedKey, fun: totalizar),
@@ -212,9 +151,11 @@ class _HomeViewState extends State<HomeViewOpen> {
                               if (widget.provider.pointNow != null) {
                                 if (widget.provider.listaDetalle.isNotEmpty) {
                                   await showDialog(
-                                      barrierDismissible: false,
-                                      context: context,
-                                      builder: (context) => SDialogProductos());
+                                          barrierDismissible: false,
+                                          context: context,
+                                          builder: (context) =>
+                                              SDialogProductos())
+                                      .then((value) => totalizar());
                                 } else {
                                   showToast("No ha ingresado ningun producto");
                                 }

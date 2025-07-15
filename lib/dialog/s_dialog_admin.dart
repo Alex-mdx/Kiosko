@@ -297,7 +297,7 @@ class _DialogAdmin extends State<DialogAdmin> {
                           await PrintFinal.ventaBoletaje(
                               provider: provider,
                               type: provider.selectDevice!,
-                              venta: venta);
+                              venta: venta,transaccion: null);
                         } else {
                           provider.selectDevice = null;
                         }
@@ -342,7 +342,6 @@ class _DialogAdmin extends State<DialogAdmin> {
                               onAcceptPressed: (context) async {
                                 codigo = await SqlOperaciones.solicitarPin();
                                 debugPrint('$codigo');
-                                Navigation.pop();
                               });
                           if (codigo != null) {
                             await showDialog(

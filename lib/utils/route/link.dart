@@ -4,7 +4,7 @@ class Link {
   static bool defecto = false;
   static final apiSoferp = defecto
       ? Preferencias.servidorLicencia
-      : 'https://test2.soferp-10.com'; //https://test2.soferp.com
+      : 'https://ceiba.soferp.com'; //https://test2.soferp-10.com
   static String apiLogin = "$apiSoferp/app/login";
   static String apiDireccion = "$apiSoferp/app/direcciones";
   static String apiEmpresa =

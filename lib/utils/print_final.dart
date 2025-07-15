@@ -16,6 +16,7 @@ import 'package:kiosko/utils/textos.dart';
 import 'package:image/image.dart' as img;
 import 'package:thermal_printer_plus/thermal_printer.dart';
 
+import '../models/MPago_payment_model.dart';
 import '../models/venta_model.dart';
 import 'funcion_parser.dart';
 
@@ -82,7 +83,7 @@ class PrintFinal {
   static Future<void> ventaBoletaje(
       {required PrinterModel type,
       required MainProvider provider,
-      required VentaModel venta}) async {
+      required VentaModel venta, required MPagoPaymentModel? transaccion}) async {
     final profile = await CapabilityProfile.load();
     final generator = Generator(type.paper!, profile);
     List<int> bytes = [];
@@ -259,7 +260,7 @@ class PrintFinal {
   static Future<void> impresionCorteVenta(
       {required MainProvider provider,
       required List<VentaModel> corteFin,
-      required PrinterModel tipo}) async {
+      required PrinterModel tipo, required }) async {
     final profile = await CapabilityProfile.load();
     final generator = Generator(tipo.paper!, profile);
     List<int> bytes = [];

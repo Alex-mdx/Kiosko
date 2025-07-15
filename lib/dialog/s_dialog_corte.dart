@@ -339,8 +339,7 @@ class DialogCorte extends StatelessWidget {
                             onAcceptPressed: (context) async {
                               await generarCorte(ventas);
                               await Navigation.pushNamedAndRemoveUntil(
-                                  routeName: 'login',
-                                  predicate: (route) => false);
+                                  routeName: 'login');
                             });
                       },
                       label: Text('Enviar Corte',
@@ -355,31 +354,30 @@ class DialogCorte extends StatelessWidget {
       MainProvider proNavegacion, BuildContext context) {
     return ElevatedButton.icon(
         onPressed: () async {
-          
-            if (proNavegacion.selectDevice == null) {
-              showDialog(
-                  context: context,
-                  builder: (context) => const Dialog(child: DialogImpresora()));
-            } else {
-              try {
-                  showToast("Imprimiendo");
-                  var result = await ImpresoraConnect.conectar(
-                      proNavegacion.selectDevice!);
-                  if (result) {
-                    await PrintFinal.impresionCorteVenta(provider: proNavegacion,
-                        corteFin: ventas, tipo: proNavegacion.selectDevice!);
-                  } else {
-                    proNavegacion.selectDevice = null;
-                    showToast('No se pudo establecer conexion con la impresora',
-                        dismissOtherToast: true);
-                  }
-                
-              } catch (e) {
-                showToast('$e');
-                debugPrint('$e');
+          if (proNavegacion.selectDevice == null) {
+            showDialog(
+                context: context,
+                builder: (context) => const Dialog(child: DialogImpresora()));
+          } else {
+            try {
+              showToast("Imprimiendo");
+              var result =
+                  await ImpresoraConnect.conectar(proNavegacion.selectDevice!);
+              if (result) {
+                await PrintFinal.impresionCorteVenta(
+                    provider: proNavegacion,
+                    corteFin: ventas,
+                    tipo: proNavegacion.selectDevice!);
+              } else {
+                proNavegacion.selectDevice = null;
+                showToast('No se pudo establecer conexion con la impresora',
+                    dismissOtherToast: true);
               }
+            } catch (e) {
+              showToast('$e');
+              debugPrint('$e');
             }
-          
+          }
         },
         label: Text('Generar Corte',
             overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12.sp)),
