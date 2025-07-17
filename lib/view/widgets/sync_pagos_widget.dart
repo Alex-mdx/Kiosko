@@ -122,7 +122,7 @@ class _SyncPanelPagosState extends State<SyncPanelPagos> {
                                       if (ventaSesion.isNotEmpty) {
                                         var envio =
                                             await SqlOperaciones.pagoTotal(
-                                                proNavegacion, item);
+                                                item);
                                         if (envio) {
                                           await PrintFinal.impresionCorteVenta(
                                               provider: proNavegacion,

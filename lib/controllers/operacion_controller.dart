@@ -19,6 +19,12 @@ class SqlOperaciones {
   static Future<VentaModel> pagoVenta(VentaModel ventaActual) async {
     final user = await UserController.getItem();
     final uri = Uri.parse("${Link.apiCorte}?api_key=${user!.uuid}");
+    List<PagoModel> newPago = [];
+    for (var element in ventaActual.pagos) {
+      var tempPago = element.copyWith(
+          cuentaBancariaId: element.cuentaBancariaId ?? user.cuentaBancariaId);
+      newPago.add(tempPago);
+    }
     VentaModel ventaSync = ventaActual.copyWith(
         folio: ventaActual.consecutivo.toString(),
         apiKeyId: user.id,
@@ -26,7 +32,8 @@ class SqlOperaciones {
         empresaId: user.empresaId,
         almacenId: user.almacenes.firstOrNull,
         sucursalId: user.sucursalId,
-        cuentaBancariaId: user.cuentaBancariaId);
+        cuentaBancariaId: user.cuentaBancariaId,
+        pagos: newPago);
     String body = jsonEncode([ventaSync]);
     try {
       final response =
@@ -73,9 +80,9 @@ class SqlOperaciones {
     }
   }
 
-  static Future<bool> pagoTotal(
-      MainProvider proNavegar, String trasanccion) async {
-    final uri = Uri.parse("${Link.apiCorte}?api_key=${proNavegar.user!.uuid}");
+  static Future<bool> pagoTotal(String trasanccion) async {
+    final user = await UserController.getItem();
+    final uri = Uri.parse("${Link.apiCorte}?api_key=${user?.uuid}");
 
     try {
       final ventaSesion = (await SQLHelperCortePropio.getItem(trasanccion))
@@ -90,39 +97,24 @@ class SqlOperaciones {
             compraDetalles.add(element);
           }
           for (var elemento in ventaSesion[i].pagos) {
-            /* Pago newpago = Pago(
-                  id: elemento['id'],
-                  nombre: elemento['nombre'],
-                  databaseId: elemento['database_id'],
-                  factorComision: elemento['factor_comision'],
-                  codigoSat: elemento['codigo_sat'],
-                  cuentaContable: elemento['cuenta_contable'],
-                  metodoPago: elemento['metodo_pago'],
-                  formaPago: elemento['forma_pago'],
-                  moneda: elemento['moneda'],
-                  permitirCambio: elemento['permitir_cambio'],
-                  importe: elemento['importe'],
-                  referencia: elemento['referencia'],
-                  cambio: elemento['cambio'],
-                  tipoCambio: elemento['tipo_cambio'],
-                  cuentaBancariaId: proNavegar.user['cuenta_bancaria_id'],
-                  formaPagoId: elemento['forma_pago_id']);
-                  compraPagos.add(newpago);*/
-            compraPagos.add(elemento);
+            var pagoModificado = elemento.copyWith(
+                cuentaBancariaId:
+                    elemento.cuentaBancariaId ?? user!.cuentaBancariaId);
+            compraPagos.add(pagoModificado);
           }
 
           VentaModel ventaTotal = VentaModel(
               folio: ventaSesion[i].consecutivo.toString(),
               consecutivo: ventaSesion[i].consecutivo,
               sincronizado: ventaSesion[i].sincronizado,
-              apiKeyId: proNavegar.user!.id,
+              apiKeyId: user!.id,
               contactoId: ventaSesion[i].contactoId,
               vendedorId: ventaSesion[i].vendedorId,
-              userId: proNavegar.user!.userId,
-              empresaId: proNavegar.user!.empresaId,
-              almacenId: proNavegar.user!.almacenes.firstOrNull,
-              sucursalId: proNavegar.user!.sucursalId,
-              cuentaBancariaId: proNavegar.user!.cuentaBancariaId,
+              userId: user.userId,
+              empresaId: user.empresaId,
+              almacenId: user.almacenes.firstOrNull,
+              sucursalId: user.sucursalId,
+              cuentaBancariaId: user.cuentaBancariaId,
               moneda: ventaSesion[i].moneda,
               metodoPago: ventaSesion[i].metodoPago,
               razonSocialId: ventaSesion[i].razonSocialId,
@@ -158,12 +150,10 @@ class SqlOperaciones {
       } catch (e) {
         showToast('Error\n$e', duration: const Duration(seconds: 4));
         debugPrint('Error\n$e');
-        proNavegar.cargaApi = 0;
         return false;
       }
     } catch (e) {
       showToast('Error\n$e', duration: const Duration(seconds: 4));
-      proNavegar.cargaApi = 0;
       debugPrint('Error\n$e');
       return false;
     }
@@ -197,16 +187,18 @@ class SqlOperaciones {
   }
 
   static Future<int?> solicitarPin() async {
+    bool debug = kDebugMode;
     final user = await UserController.getItem();
     final empresa = await EmpresaController.getItem(user!.empresaId!);
     final uri = Uri.parse(
         "${Link.apiPin}?database_id=${user.databaseId}&api_key=${user.uuid}");
     String body = jsonEncode({
-      'correo': "${kDebugMode ? "alexarmandomdx@gmail.com" : empresa?.correo}",
+      'correo': "${debug ? "alexarmandomdx@gmail.com" : empresa?.correo}",
       'tipo_operacion': "Autorizacion de eliminacion de venta",
       'user_id': user.userId
     });
-    debugPrint("$uri\nCorreo${kDebugMode ? "alexarmandomdx@gmail.com" : empresa?.correo}");
+    debugPrint(
+        "$uri\nCorreo ${debug ? "alexarmandomdx@gmail.com" : empresa?.correo}");
     try {
       final response =
           await http.post(uri, body: body, headers: Servidor.bodyHeader);

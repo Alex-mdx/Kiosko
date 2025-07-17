@@ -156,6 +156,7 @@ class _SDialogProductosState extends State<SDialogProductos> {
                         width: 8.w,
                         height: 8.w,
                         color: Colors.green,
+                        onTap: null,
                         strokeWidth: 22.w,
                         loopAnimation: true),
                     onPressed: () async {
@@ -196,7 +197,7 @@ class _SDialogProductosState extends State<SDialogProductos> {
                               provider.pointNow!.id, provider.totalSumatoria());
                         } else {
                           showToast("No hay ninguna impresora conectada");
-                        } 
+                        }
                         if (intent != null) {
                           await showDialog(
                               context: context,
@@ -205,6 +206,9 @@ class _SDialogProductosState extends State<SDialogProductos> {
                                   provider: provider,
                                   pago: pago));
                         }
+                        setState(() {
+                          press = false;
+                        });
                       }
                     },
                     label: Text("Confirmar compra",

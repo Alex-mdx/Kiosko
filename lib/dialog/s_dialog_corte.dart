@@ -51,7 +51,7 @@ class DialogCorte extends StatelessWidget {
       if (ventaSesion.isNotEmpty) {
         if (proNavegacion.internet) {
           await SqlOperaciones.pagoTotal(
-              proNavegacion, proNavegacion.cortePropio!.transaccion!);
+              proNavegacion.cortePropio!.transaccion!);
         } else {
           showToast('Guardo el corte internamente');
         }

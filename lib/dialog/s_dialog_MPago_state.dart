@@ -85,7 +85,10 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
           });
           if (pago?.status == "approved") {
             if (!enviar) {
-              enviar = true;
+              setState(() {
+                enviar = true;
+              });
+
               var venta =
                   await GeneradorCompras.pagar(widget.provider, widget.pago);
               await PrintFinal.ventaBoletaje(
@@ -101,18 +104,18 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
           _timer?.cancel();
         }
 
-        if (close == false) {
+        if (close == false && enviar) {
           close = true;
-          Future.delayed(Duration(seconds: 4), () => Navigation.popTwice());
+          Future.delayed(Duration(seconds: 2), () => Navigation.popTwice());
         }
       }
-      if (finalizar >= 10 &&
+      /* if (finalizar >= 10 &&
           Mercadopago.string(state: intencionPago?.state ?? "") ==
               "En espera") {
         showToast("Se ha excedido el tiempo de espera\nCancelando intencion");
         await Mercadopago.cancelarIntencion(
             widget.provider.pointNow!.id, widget.intencion.id);
-      }
+      } */
     });
   }
 
@@ -170,7 +173,8 @@ class _SDialogMpagoStateState extends State<SDialogMpagoState> {
                                 height: 7.w,
                                 width: 7.w,
                                 loopAnimation: true),
-                            Text("Imprimiendo voucher",
+                            Text(
+                                "Imprimiendo voucher\nEspere un momento por favor",
                                 style: TextStyle(
                                     fontSize: 14.sp,
                                     fontStyle: FontStyle.italic))

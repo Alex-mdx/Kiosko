@@ -95,7 +95,8 @@ class FormaPagoController {
             permitirCambio: Parser.toInt(data['permitir_cambio']),
             credito: Parser.toInt(data['credito']),
             cuentaBancariaId: data['cuenta_bancaria_id'],
-            razonSocialId: data['razon_social_id'],defecto: contador  == 1 ? 1:0));
+            razonSocialId: data['razon_social_id'],
+            defecto: contador == 1 ? 1 : 0));
       }
     }
     for (var element in getprecios) {

@@ -195,6 +195,7 @@ class UserController {
 
   static Future<void> insert(UsuarioModel user) async {
     final db = await database();
+    await deleteAll();
     await existColumna("almacenes");
     await db.insert(nombreDB, user.toJson());
   }
